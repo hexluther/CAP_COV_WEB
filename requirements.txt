@@ -1,0 +1,22 @@
+# COV Inspection Tool Requirements
+
+# Core Flask components
+Flask==2.2.5
+Flask-Login==0.6.3
+Flask-PyMongo>=2.3.0
+pymongo>=4.0.1
+
+# Google API components for OAuth authentication and Drive integration
+google-api-python-client==2.93.0
+google-auth==2.21.0
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==1.0.0
+
+# HTTP requests
+requests==2.31.0
+
+# Environment configuration
+python-dotenv==1.0.1
+
+# System monitoring
+psutil>=5.9.0

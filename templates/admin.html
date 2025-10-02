@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ applicable_wing }} COV Inspections - Admin</title>
+    <link rel="icon" href="{{ url_for('static', filename=app_image.replace('static/', '')) }}" type="image/png">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --white: #ffffff;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Theme variables */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-accent: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        .dark-theme {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-accent: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--bg-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        footer .container {
+            padding: 0 2rem;
+        }
+
+        .admin-header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .admin-header h1 {
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .sort-controls label {
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .sort-controls select {
+            padding: 8px 12px;
+            border: 2px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--white);
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .sort-controls select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .covs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .cov-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .cov-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .cov-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .cov-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 10px 15px;
+            border: 2px solid var(--gray-300);
+            background: var(--white);
+            color: var(--gray-700);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-600);
+            font-size: 1.1rem;
+        }
+
+        .error {
+            background: var(--danger);
+            color: var(--white);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            padding: 0 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .back-button {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Inspection Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 20px 30px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .close {
+            color: var(--white);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .inspection-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .inspection-filters select {
+            padding: 8px 12px;
+            border: 2px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--white);
+            cursor: pointer;
+        }
+
+        .inspection-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .inspection-item {
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .inspection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .inspection-date {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .inspection-inspector {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .inspection-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--gray-300);
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .detail-value {
+            color: var(--gray-600);
+        }
+
+        .event-group {
+            margin-bottom: 30px;
+        }
+
+        .event-header {
+            background: var(--info);
+            color: var(--white);
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .event-inspections {
+            background: var(--white);
+            border: 2px solid var(--info);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            footer .container {
+                padding: 0 10px;
+            }
+
+            .covs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+                padding: 0 1rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .sort-controls {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: stretch;
+            }
+            
+            .sort-controls label {
+                text-align: center;
+            }
+            
+            .sort-controls select {
+                width: 100%;
+                max-width: none;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-header">
+        <a href="/admin" class="back-button">← Back to Admin Dashboard</a>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+            <span id="themeIcon">🌙</span>
+            <span id="themeText">Dark Mode</span>
+        </button>
+    </div>
+    
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🚐 Inspection Management</h1>
+            <p>Corporate Owned Vehicle Inspection Administration</p>
+        </div>
+
+        <div class="controls">
+            <div class="sort-controls">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="cov_number">COV Number</option>
+                    <option value="total_inspections">Total Inspections</option>
+                    <option value="last_inspection">Last Inspection</option>
+                    <option value="event_count">Event Count</option>
+                </select>
+                
+                <label for="sortOrder">Order:</label>
+                <select id="sortOrder">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+            
+            <div class="pagination-info" id="paginationInfo">
+                Loading...
+            </div>
+        </div>
+
+        <div id="loadingMessage" class="loading">
+            Loading COVs...
+        </div>
+
+        <div id="errorMessage" class="error" style="display: none;">
+            Error loading data
+        </div>
+
+        <div id="covsGrid" class="covs-grid" style="display: none;">
+            <!-- COV cards will be loaded here -->
+        </div>
+
+        <div id="pagination" class="pagination" style="display: none;">
+            <!-- Pagination buttons will be loaded here -->
+        </div>
+    </div>
+
+
+    <script>
+        let currentPage = 1;
+        let currentSort = 'cov_number';
+        let currentOrder = 'asc';
+        let currentCov = null;
+
+        // Load COVs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            loadCOVs();
+            
+            // Add event listeners
+            document.getElementById('sortBy').addEventListener('change', function() {
+                currentSort = this.value;
+                loadCOVs();
+            });
+            
+            document.getElementById('sortOrder').addEventListener('change', function() {
+                currentOrder = this.value;
+                loadCOVs();
+            });
+        });
+
+        function loadCOVs(page = 1) {
+            currentPage = page;
+            
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('covsGrid').style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+            
+            fetch(`/api/covs?sort=${currentSort}&order=${currentOrder}&page=${page}&per_page=21`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        displayCOVs(data.covs);
+                        updatePagination(data.pagination);
+                        document.getElementById('loadingMessage').style.display = 'none';
+                        document.getElementById('covsGrid').style.display = 'grid';
+                        document.getElementById('pagination').style.display = 'flex';
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('loadingMessage').style.display = 'none';
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Error loading COVs: ' + error.message;
+                });
+        }
+
+        function displayCOVs(covs) {
+            const grid = document.getElementById('covsGrid');
+            grid.innerHTML = '';
+            
+            covs.forEach(cov => {
+                const card = createCOVCard(cov);
+                grid.appendChild(card);
+            });
+        }
+
+        function createCOVCard(cov) {
+            const card = document.createElement('div');
+            card.className = 'cov-card';
+            card.onclick = () => window.location.href = `/admin/cov/${cov.cov_number}`;
+            
+            card.innerHTML = `
+                <div class="cov-number">COV ${cov.cov_number}</div>
+                <div class="cov-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">${cov.total_inspections}</span>
+                        <div class="stat-label">Inspections</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${cov.event_count}</span>
+                        <div class="stat-label">Events</div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function updatePagination(pagination) {
+            const paginationDiv = document.getElementById('pagination');
+            const infoDiv = document.getElementById('paginationInfo');
+            
+            infoDiv.textContent = `Showing ${((pagination.page - 1) * pagination.per_page) + 1}-${Math.min(pagination.page * pagination.per_page, pagination.total)} of ${pagination.total} COVs`;
+            
+            let html = '';
+            
+            // Previous button
+            html += `<button ${pagination.page === 1 ? 'disabled' : ''} onclick="loadCOVs(${pagination.page - 1})">Previous</button>`;
+            
+            // Page numbers
+            const startPage = Math.max(1, pagination.page - 2);
+            const endPage = Math.min(pagination.pages, pagination.page + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const isCurrent = i === pagination.page;
+                html += `<button class="${isCurrent ? 'current-page' : ''}" onclick="loadCOVs(${i})">${i}</button>`;
+            }
+            
+            // Next button
+            html += `<button ${pagination.page === pagination.pages ? 'disabled' : ''} onclick="loadCOVs(${pagination.page + 1})">Next</button>`;
+            
+            paginationDiv.innerHTML = html;
+        }
+
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                themeToggle.innerHTML = '<span id="themeIcon">🌙</span><span id="themeText">Dark Mode</span>';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                themeToggle.innerHTML = '<span id="themeIcon">☀️</span><span id="themeText">Light Mode</span>';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-theme');
+                themeToggle.innerHTML = '<span id="themeIcon">☀️</span><span id="themeText">Light Mode</span>';
+            } else {
+                body.classList.remove('dark-theme');
+                themeToggle.innerHTML = '<span id="themeIcon">🌙</span><span id="themeText">Dark Mode</span>';
+            }
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer style="margin-top: 2rem; padding: 1.5rem 0; border-top: 1px solid var(--border-color); background: var(--bg-secondary); text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+        <div class="container">
+            <p style="margin: 0; font-weight: 500;">CAP COV Inspection Application</p>
+            <p style="margin: 0.5rem 0 0 0;">Created by: Maj Jayson Hansen (621633)</p>
+        </div>
+    </footer>
+</body>
+</html>

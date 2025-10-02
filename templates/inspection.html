@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ applicable_wing }} COV Inspections</title>
+    <link rel="icon" href="/static/images/cov_web_icon.png" type="image/png">
+    <style>
+        :root {
+            /* Light Theme Colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-accent: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #adb5bd;
+            --border-color: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --primary: #007bff;
+            --secondary: #6c757d;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Colors */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-accent: #404040;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-muted: #808080;
+            --border-color: #404040;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --primary: #007bff;
+            --secondary: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            background-image: url("{{ app_image }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--text-primary);
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-1px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .section {
+            background: var(--bg-primary);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .section h2 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .user-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-right: 1rem;
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-accent);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>{{ applicable_wing }} COV Inspections</h1>
+            <div class="header-actions">
+                <div class="user-info" id="userInfo">
+                    <!-- User info will be populated by JavaScript -->
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                    <span id="themeText">Dark Mode</span>
+                </button>
+                <button class="logout-btn" onclick="logout()">Log Out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Main Menu -->
+        <div class="section" id="mainMenu">
+            <h2>Choose an Option</h2>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="showInspectedVans()">
+                    Inspected COVs List
+                </button>
+                <button class="btn btn-success" onclick="startInspection()">
+                    New Inspection
+                </button>
+                <button class="btn btn-warning" onclick="openAttachVideos()">
+                    Attach Videos
+                </button>
+                {% if is_admin %}
+                <button class="btn btn-info" onclick="window.location.href='/admin'">
+                    Admin Panel
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Inspected COVs List Section -->
+        <div class="section hidden" id="inspectedVansSection">
+            <div class="btn-group" style="margin-bottom: 1rem;">
+                <button class="btn btn-secondary" onclick="backToMainMenu()">← Back to Menu</button>
+            </div>
+            
+            <h2>Inspected COVs List</h2>
+            
+            <!-- Sorting and Pagination Controls -->
+            <div class="controls-row">
+                <div class="sort-controls">
+                    <label for="sortBy">Sort by:</label>
+                    <select id="sortBy" onchange="loadInspectedVans()">
+                        <option value="van_number,date">COV #, Date</option>
+                        <option value="van_number,inspector">COV #, Inspector</option>
+                        <option value="date,van_number">Date, COV #</option>
+                        <option value="inspector,date">Inspector, Date</option>
+                        <option value="event,date">Event, Date</option>
+                    </select>
+                </div>
+                
+                <div class="pagination-controls">
+                    <label for="perPage">Per page:</label>
+                    <select id="perPage" onchange="loadInspectedVans()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="inspectedVansList"></div>
+            
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- Event Selection Section -->
+        <div class="section hidden" id="eventSelectionSection">
+            <h2>Select Event</h2>
+            <div id="eventList"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="proceedToEventSelection()">Continue</button>
+                <button class="btn btn-secondary" onclick="backFromEventSelection()">← Back</button>
+            </div>
+        </div>
+
+        <!-- Event Selection for Video Attachment -->
+        <div class="section hidden" id="eventSelectionAttachSection">
+            <h2>Select Event for Video Attachment</h2>
+            <div id="eventListAttach"></div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="proceedToEventSelectionAttach()">Continue</button>
+                <button class="btn btn-secondary" onclick="backToMainMenuFromEventAttach()">← Back</button>
+            </div>
+        </div>
+
+        <!-- Inspection Form Section -->
+        <div class="section hidden" id="inspectionFormSection">
+            <h2>Step 1 of 6: Vehicle Information</h2>
+            <form id="inspectionForm">
+                <div class="form-group">
+                    <label for="dateField">Date:</label>
+                    <input type="datetime-local" id="dateField" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="inspector_id">Inspector CAPID:</label>
+                    <input type="text" id="inspector_id" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="event_name">Event:</label>
+                    <input type="text" id="event_name" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="van_number">COV Number:</label>
+                    <select id="van_number" required>
+                        <option value="">Select COV</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="vin_group" style="display: none;">
+                    <label for="vin_display">Vehicle Identification Number:</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="text" id="vin_display" readonly style="flex: 1;">
+                        <button type="button" id="vin_correct" class="btn btn-success" style="background-color: #28a745; color: white; padding: 5px 10px; border: none; border-radius: 3px;">Correct</button>
+                        <button type="button" id="vin_incorrect" class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 5px 10px; border: none; border-radius: 3px;">Incorrect</button>
+                    </div>
+                    <input type="hidden" id="vin_confirmed" name="vin_confirmed" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label for="odometer_in">Odometer Reading:</label>
+                    <input type="number" id="odometer_in" min="0" step="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="license_plate">License Plate:</label>
+                    <input type="text" id="license_plate">
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="goToStep(2)">Next</button>
+                    <button type="button" class="btn btn-secondary" onclick="backToMainMenu()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Additional sections will be added as needed -->
+    </main>
+
+    <script>
+        // Theme management
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (newTheme === 'dark') {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
+            }
+        }
+
+        function updateUserInfo() {
+            const userInfoDiv = document.getElementById('userInfo');
+            if (userInfoDiv && window.userData) {
+                const memberInfo = window.userData.member_info;
+                if (memberInfo) {
+                    userInfoDiv.textContent = `${memberInfo.rank} ${memberInfo.first_name} ${memberInfo.last_name}`;
+                }
+            }
+        }
+
+        // Logout function
+        function logout() {
+            // Clear all localStorage data except theme preference
+            const theme = localStorage.getItem('theme');
+            localStorage.clear();
+            if (theme) {
+                localStorage.setItem('theme', theme);
+            }
+            
+            // Redirect to logout endpoint
+            window.location.href = '/logout';
+        }
+
+        // Navigation functions
+        function backToMainMenu() {
+            // Hide all sections first
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            // Show only the main menu
+            document.getElementById('mainMenu').classList.remove('hidden');
+        }
+
+        function showInspectedVans() {
+            // Hide all sections first
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.add('hidden'));
+            
+            // Show inspected vans section
+            document.getElementById('inspectedVansSection').classList.remove('hidden');
+            
+            // Load the data
+            loadInspectedVans();
+        }
+
+        function startInspection() {
+            // Set flag to track that we came from New Inspection
+            localStorage.setItem('eventSelectionSource', 'newInspection');
+            document.getElementById("mainMenu").classList.add("hidden");
+            document.getElementById("eventSelectionSection").classList.remove("hidden");
+            loadEvents();
+        }
+
+        function openAttachVideos() {
+            // Check for missing videos first
+            fetch('/missing_videos')
+                .then(response => response.json())
+                .then(missingVideos => {
+                    if (missingVideos.length === 0) {
+                        // No missing videos - show message
+                        document.getElementById("mainMenu").classList.add("hidden");
+                        document.getElementById("attachVideosSection").classList.remove("hidden");
+                        
+                        // Show message that all videos are attached
+                        const missingList = document.getElementById('missingList');
+                        const attachForm = document.getElementById('attachForm');
+                        
+                        if (missingList) {
+                            missingList.innerHTML = '<div class="alert alert-success">✅ All inspections have videos attached!</div>';
+                        }
+                        
+                        if (attachForm) {
+                            attachForm.classList.add('hidden');
+                        }
+                    } else {
+                        // There are missing videos - proceed with event selection
+                        document.getElementById("mainMenu").classList.add("hidden");
+                        document.getElementById("eventSelectionAttachSection").classList.remove("hidden");
+                        loadEventsForAttach();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking missing videos:', error);
+                    // On error, proceed with normal flow
+                    document.getElementById("mainMenu").classList.add("hidden");
+                    document.getElementById("eventSelectionAttachSection").classList.remove("hidden");
+                    loadEventsForAttach();
+                });
+        }
+
+        // Event selection functions
+        function loadEvents() {
+            fetch('/events')
+                .then(response => response.json())
+                .then(events => {
+                    const eventList = document.getElementById('eventList');
+                    eventList.innerHTML = '';
+                    
+                    events.forEach(event => {
+                        const eventItem = document.createElement('div');
+                        eventItem.className = 'event-item';
+                        eventItem.innerHTML = `
+                            <label>
+                                <input type="radio" name="event" value="${event.name}">
+                                ${event.name}
+                            </label>
+                        `;
+                        eventList.appendChild(eventItem);
+                    });
+                    
+                    // Add "Create New Event" option
+                    const newEventItem = document.createElement('div');
+                    newEventItem.className = 'event-item';
+                    newEventItem.innerHTML = `
+                        <label>
+                            <input type="radio" name="event" value="create_new">
+                            Other - Create New Event
+                        </label>
+                    `;
+                    eventList.appendChild(newEventItem);
+                })
+                .catch(error => {
+                    console.error('Error loading events:', error);
+                    document.getElementById('eventList').innerHTML = '<p>Error loading events. Please try again.</p>';
+                });
+        }
+
+        function loadEventsForAttach() {
+            fetch('/events')
+                .then(response => response.json())
+                .then(events => {
+                    const eventList = document.getElementById('eventListAttach');
+                    eventList.innerHTML = '';
+                    
+                    events.forEach(event => {
+                        const eventItem = document.createElement('div');
+                        eventItem.className = 'event-item';
+                        eventItem.innerHTML = `
+                            <label>
+                                <input type="radio" name="eventAttach" value="${event.name}">
+                                ${event.name}
+                            </label>
+                        `;
+                        eventList.appendChild(eventItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading events:', error);
+                    document.getElementById('eventListAttach').innerHTML = '<p>Error loading events. Please try again.</p>';
+                });
+        }
+
+        function proceedToEventSelection() {
+            const selectedEvent = document.querySelector('input[name="event"]:checked');
+            if (!selectedEvent) {
+                alert('Please select an event');
+                return;
+            }
+            
+            if (selectedEvent.value === 'create_new') {
+                const newEventName = prompt('Enter new event name:');
+                if (!newEventName || newEventName.trim() === '') {
+                    return;
+                }
+                
+                // Create new event
+                fetch('/events', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: newEventName.trim() })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Set the event name and proceed
+                        document.getElementById('event_name').value = newEventName.trim();
+                        localStorage.setItem('selectedEvent', newEventName.trim());
+                        proceedToInspectionForm();
+                    } else {
+                        alert('Error creating event: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating event:', error);
+                    alert('Error creating event. Please try again.');
+                });
+            } else {
+                // Use existing event
+                document.getElementById('event_name').value = selectedEvent.value;
+                localStorage.setItem('selectedEvent', selectedEvent.value);
+                proceedToInspectionForm();
+            }
+        }
+
+        function proceedToEventSelectionAttach() {
+            const selectedEvent = document.querySelector('input[name="eventAttach"]:checked');
+            if (!selectedEvent) {
+                alert('Please select an event');
+                return;
+            }
+            
+            // Proceed to video attachment
+            window.location.href = `/attach_videos?event=${encodeURIComponent(selectedEvent.value)}`;
+        }
+
+        function proceedToInspectionForm() {
+            // Hide event selection
+            document.getElementById('eventSelectionSection').classList.add('hidden');
+            
+            // Show inspection form
+            document.getElementById('inspectionFormSection').classList.remove('hidden');
+            
+            // Set current date/time
+            document.getElementById('dateField').value = getCurrentNYTime();
+            
+            // Load COV options
+            loadCOVOptions();
+        }
+
+        // COV loading
+        function loadCOVOptions() {
+            fetch('/covs')
+                .then(response => response.json())
+                .then(covs => {
+                    const vanSelect = document.getElementById('van_number');
+                    vanSelect.innerHTML = '<option value="">Select COV</option>';
+                    
+                    covs.forEach(cov => {
+                        const option = document.createElement('option');
+                        option.value = cov.number;
+                        option.textContent = `COV ${cov.number}`;
+                        vanSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading COVs:', error);
+                });
+        }
+
+        // Utility functions
+        function getCurrentNYTime() {
+            const now = new Date();
+            const nyTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+            return nyTime.toISOString().slice(0, 16);
+        }
+
+        // VIN handling
+        let vinConfirmed = null;
+        
+        function handleVINConfirmation(isCorrect) {
+            vinConfirmed = isCorrect;
+            
+            // Update hidden field
+            document.getElementById('vin_confirmed').value = isCorrect ? 'true' : 'false';
+            
+            // Update button styles
+            const correctBtn = document.getElementById('vin_correct');
+            const incorrectBtn = document.getElementById('vin_incorrect');
+            
+            if (isCorrect) {
+                correctBtn.style.backgroundColor = '#155724';
+                correctBtn.style.border = '2px solid #28a745';
+                incorrectBtn.style.backgroundColor = '#dc3545';
+                incorrectBtn.style.border = '1px solid #dc3545';
+            } else {
+                incorrectBtn.style.backgroundColor = '#721c24';
+                incorrectBtn.style.border = '2px solid #dc3545';
+                correctBtn.style.backgroundColor = '#28a745';
+                correctBtn.style.border = '1px solid #28a745';
+            }
+        }
+        
+        function checkVIN(vanNumber) {
+            if (!vanNumber) {
+                document.getElementById('vin_group').style.display = 'none';
+                vinConfirmed = null;
+                document.getElementById('vin_confirmed').value = '';
+                return;
+            }
+            
+            fetch('/check_van', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ van_number: vanNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'valid' && data.vin_id) {
+                    document.getElementById('vin_display').value = data.vin_id;
+                    document.getElementById('vin_group').style.display = 'block';
+                    vinConfirmed = null; // Reset confirmation
+                    document.getElementById('vin_confirmed').value = ''; // Reset hidden field
+                    
+                    // Reset button styles
+                    const correctBtn = document.getElementById('vin_correct');
+                    const incorrectBtn = document.getElementById('vin_incorrect');
+                    correctBtn.style.backgroundColor = '#28a745';
+                    correctBtn.style.border = '1px solid #28a745';
+                    incorrectBtn.style.backgroundColor = '#dc3545';
+                    incorrectBtn.style.border = '1px solid #dc3545';
+                } else {
+                    document.getElementById('vin_group').style.display = 'none';
+                    vinConfirmed = null;
+                    document.getElementById('vin_confirmed').value = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking VIN:', error);
+                document.getElementById('vin_group').style.display = 'none';
+                vinConfirmed = null;
+                document.getElementById('vin_confirmed').value = '';
+            });
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set user data
+            document.getElementById('inspector_id').value = '{{ capid }}';
+            
+            // Set global user data for JavaScript functions
+            window.userData = {
+                member_info: {{ member_info | tojson if member_info else 'null' }}
+            };
+            
+            // Update user info display
+            updateUserInfo();
+            
+            // Initialize theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (savedTheme === 'dark') {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
+            }
+            
+            // Add VIN event listeners
+            document.getElementById('van_number').addEventListener('change', function() {
+                checkVIN(this.value);
+            });
+            
+            document.getElementById('vin_correct').addEventListener('click', function() {
+                handleVINConfirmation(true);
+            });
+            
+            document.getElementById('vin_incorrect').addEventListener('click', function() {
+                handleVINConfirmation(false);
+            });
+        });
+    </script>
+</body>
+</html>

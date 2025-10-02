@@ -1,0 +1,4614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ applicable_wing }} COV Inspections</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/pawg_patch.png') }}" type="image/png">
+  <style>
+    :root {
+      /* light theme colors - spent way too long picking these */
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-accent: #e9ecef;
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --text-muted: #adb5bd;
+      --border-color: #dee2e6;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #17a2b8;
+      --primary: #007bff;
+      --secondary: #6c757d;
+    }
+
+    [data-theme="dark"] {
+      /* dark theme - looks pretty cool */
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2d2d2d;
+      --bg-accent: #404040;
+      --text-primary: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #808080;
+      --border-color: #404040;
+      --shadow: rgba(0, 0, 0, 0.3);
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --info: #17a2b8;
+      --primary: #007bff;
+      --secondary: #6c757d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      transition: all 0.3s ease;
+      min-height: 100vh;
+      position: relative;
+    }
+
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px 0;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .patch {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .user-info {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 25px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-weight: 500;
+      margin: 0 1rem 0 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-info:hover {
+      background: var(--bg-accent);
+      border-color: var(--primary);
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-shadow: 2px 2px 4px var(--shadow);
+    }
+
+    .theme-toggle {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 50px;
+    padding: 10px 20px;
+    cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+
+    .logout-btn {
+      background: var(--danger);
+      border: 2px solid var(--danger);
+      border-radius: 50px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logout-btn:hover {
+      background: #c82333;
+      border-color: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px var(--shadow);
+    }
+
+
+    .section {
+      background: var(--bg-secondary);
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px var(--shadow);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .section:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--shadow);
+    }
+
+    .section h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+      text-align: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 15px 20px;
+      font-size: 1.2rem;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control:invalid {
+      border-color: var(--danger);
+    }
+
+    .btn {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+      min-height: 50px;
+      min-width: 120px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #0056b3);
+      color: white;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success), #1e7e34);
+      color: white;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      color: #212529;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--danger), #c82333);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--secondary), #545b62);
+      color: white;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, var(--warning), #e0a800);
+      color: #212529;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn:disabled:hover {
+      background: inherit;
+      transform: none !important;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-outline:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-group .btn {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      margin: 15px 0;
+    }
+
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    padding: 10px 20px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .radio-item:hover {
+      background: var(--bg-accent);
+    }
+
+    .radio-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    
+    /* fix radio button visual states - selected should have white dot, unselected should be empty */
+    .radio-item:not(.selected) input[type="radio"] {
+      accent-color: transparent;
+    }
+    
+    .radio-item.selected input[type="radio"] {
+      accent-color: white;
+    }
+
+    .radio-item.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .status-indicator {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .status-valid {
+      background: var(--success);
+      color: white;
+    }
+
+    .status-invalid {
+      background: var(--danger);
+      color: white;
+    }
+
+    .status-loading {
+      background: var(--info);
+      color: white;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+      border: 4px solid var(--border-color);
+      border-top: 4px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .alert-success {
+      background: rgba(40, 167, 69, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .alert-danger {
+      background: rgba(220, 53, 69, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+
+    .alert-info {
+      background: rgba(23, 162, 184, 0.1);
+      border: 1px solid var(--info);
+      color: var(--info);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-primary);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px var(--shadow);
+    }
+
+    .table th,
+    .table td {
+      padding: 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .table th {
+      background: var(--bg-accent);
+      font-weight: 600;
+      color: var(--text-primary);
+    cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .table th:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .table tbody tr:hover {
+      background: var(--bg-accent);
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .slider {
+      flex: 1;
+      height: 16px; /* increased from 8px for better touch targets */
+      border-radius: 8px;
+      background: var(--bg-accent);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+
+    .slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+    border: none;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+
+    .slider-value {
+      min-width: 60px;
+      text-align: center;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    /* Slider container */
+    .slider-container {
+      position: relative;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+    }
+
+    .breadcrumb-item {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .breadcrumb-item:hover {
+      background: var(--bg-accent);
+      color: var(--text-primary);
+    }
+
+    .breadcrumb-item.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .breadcrumb-separator {
+      color: var(--text-muted);
+    }
+
+    /* inspection cards - these took forever to get right */
+    .inspection-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .inspection-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .inspection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .inspection-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-primary);
+    }
+    
+    .inspection-date {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .inspection-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .inspection-main {
+      flex: 1;
+    }
+    
+    .inspection-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      flex-wrap: wrap;
+    }
+    
+    .inspection-line:last-child {
+      margin-bottom: 0;
+    }
+    
+    .inspection-thumbnail {
+      flex-shrink: 0;
+    }
+    
+    .inspection-footer {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .inspection-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    .inspection-value {
+      color: var(--text-primary);
+    }
+    
+    .status-yes {
+      color: #28a745;
+      font-weight: bold;
+    }
+    
+    .status-no {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    
+    .video-thumbnail-container {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .video-thumbnail-container:hover {
+      transform: scale(1.05);
+    }
+    
+    .video-thumbnail {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 2px solid var(--border-color);
+    }
+    
+    .video-placeholder {
+      width: 120px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+    }
+    
+    .video-placeholder svg {
+    border-radius: 4px;
+  }
+    
+    /* modal stuff - had to make these look decent */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background-color: var(--bg-primary);
+      margin: 0;
+      padding: 0;
+    border: none;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      background: var(--primary-color);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+    
+    .close {
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+    cursor: pointer;
+      line-height: 1;
+    }
+    
+    .close:hover {
+      opacity: 0.7;
+    }
+    
+    .modal-body {
+      padding: 1.5rem;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    
+    .modal-footer {
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      text-align: right;
+    }
+
+    /* Mobile modal adjustments */
+    @media (max-width: 768px) {
+      .modal-content {
+        width: 95%;
+        margin: 2% auto;
+        max-height: 90vh;
+      }
+      
+      .modal-body {
+        padding: 1rem;
+        max-height: 50vh;
+      }
+      
+      .modal-footer {
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+      }
+      
+      .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .detail-section {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .detail-section h4 {
+      margin: 0 0 0.5rem 0;
+      color: var(--primary-color);
+      font-size: 1rem;
+    }
+    
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+    
+    .video-section {
+      text-align: center;
+      margin-top: 1rem;
+    }
+    
+    .video-player {
+      width: 100%;
+      max-width: 500px;
+      height: auto;
+      border-radius: 6px;
+    }
+
+    /* Touch-friendly improvements */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .patch {
+        height: 40px;
+      }
+      
+      .header-right {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .header-controls {
+        gap: 1rem;
+      }
+
+      .btn {
+        min-height: 60px;
+        font-size: 1.3rem;
+      }
+
+      .form-control {
+        font-size: 1.3rem;
+        padding: 20px;
+      }
+
+      .radio-item {
+        padding: 15px 25px;
+        font-size: 1.2rem;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn-group .btn {
+        width: 100%;
+      }
+
+      /* Mobile-specific inspection card styles */
+      .inspection-card {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .inspection-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .inspection-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+
+      .inspection-date {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+      }
+
+      .inspection-content {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      .inspection-main {
+        order: 2;
+      }
+
+      .inspection-thumbnail {
+        order: 1;
+        align-self: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .inspection-line {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        background: var(--bg-accent);
+    border-radius: 4px;
+  }
+
+      .inspection-line:last-child {
+        margin-bottom: 0;
+      }
+
+      .inspection-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+      }
+
+      .inspection-value {
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-left: 0;
+      }
+
+      .video-thumbnail {
+        max-width: 120px;
+        max-height: 90px;
+        width: auto;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      .video-thumbnail-container {
+        text-align: center;
+      }
+
+      .inspection-footer {
+        font-size: 0.8rem;
+        margin-top: 0.75rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border-color);
+      }
+
+      /* Pagination controls mobile */
+      .pagination-controls {
+        padding: 0.75rem;
+      }
+
+      .pagination-controls > div {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      .pagination-controls .form-control {
+        font-size: 1rem;
+        padding: 10px;
+      }
+
+      #paginationButtons {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      #paginationButtons .btn {
+        min-width: 40px;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+
+      /* Sorting controls mobile */
+      .sorting-controls {
+        padding: 0.75rem;
+      }
+
+      .sorting-controls > div {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      .sorting-controls .form-control {
+        font-size: 1rem;
+        padding: 10px;
+      }
+
+      .sorting-controls .btn {
+        font-size: 1rem;
+        padding: 12px;
+      }
+    }
+
+    /* Extra small mobile devices (phones) */
+    @media (max-width: 480px) {
+      .container {
+        padding: 5px;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .header-left {
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .patch {
+        height: 35px;
+      }
+
+      .header-right {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+        width: 100%;
+      }
+      
+      .header-controls {
+        flex-direction: row;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+      
+      .user-info {
+        text-align: center;
+        justify-content: center;
+      }
+
+      .theme-toggle, .logout-btn {
+        font-size: 0.9rem;
+        padding: 8px 16px;
+      }
+
+      .inspection-card {
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .inspection-title {
+        font-size: 1rem;
+      }
+
+      .inspection-line {
+        padding: 0.4rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .inspection-label {
+        font-size: 0.75rem;
+      }
+
+      .inspection-value {
+        font-size: 0.85rem;
+      }
+
+      .video-thumbnail {
+        max-width: 100px;
+        max-height: 75px;
+      }
+
+      .pagination-controls, .sorting-controls {
+        padding: 0.5rem;
+      }
+
+      .pagination-controls .form-control, .sorting-controls .form-control {
+        font-size: 0.9rem;
+        padding: 8px;
+      }
+
+      #paginationButtons .btn {
+        min-width: 35px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Accessibility improvements */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f0f0f0;
+        --text-primary: #000000;
+        --border-color: #000000;
+      }
+      
+      [data-theme="dark"] {
+        --bg-primary: #000000;
+        --bg-secondary: #1a1a1a;
+        --text-primary: #ffffff;
+        --border-color: #ffffff;
+      }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Print styles */
+    @media print {
+      .header, .btn, .breadcrumb, .progress-container {
+        display: none !important;
+      }
+      
+      .section {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+        page-break-inside: avoid;
+      }
+    }
+
+    /* Attach Videos Section Styling */
+    .missing-videos-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.5rem 0;
+    }
+
+    .missing-video-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-accent);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .missing-video-item:hover {
+      background: rgba(0, 123, 255, 0.1);
+      border-color: #007bff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    }
+
+    .missing-video-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .missing-video-van {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+
+    .missing-video-inspector {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .missing-video-attach-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      display: inline-block;
+      text-align: center;
+      user-select: none;
+    }
+
+    .missing-video-attach-btn:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    }
+
+    .missing-video-attach-btn:active {
+      transform: translateY(0);
+    }
+
+    .no-missing-videos {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--bg-accent);
+      border-radius: 12px;
+      border: 2px dashed var(--border-color);
+    }
+
+    .no-missing-videos h3 {
+      color: var(--success-color);
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .no-missing-videos p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* Mobile responsive for attach videos */
+    @media (max-width: 768px) {
+      .missing-video-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1.25rem;
+      }
+
+      .missing-video-info {
+        text-align: center;
+      }
+
+      .missing-video-attach-btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+      }
+
+      .no-missing-videos {
+        padding: 2rem 1rem;
+      }
+
+      .no-missing-videos h3 {
+        font-size: 1.3rem;
+      }
+    }
+
+
+
+    /* Additional utility classes */
+    .text-muted {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .mt-4 {
+      margin-top: 1.5rem;
+    }
+
+    .mb-4 {
+      margin-bottom: 1.5rem;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .d-none {
+      display: none !important;
+    }
+
+    .d-block {
+      display: block !important;
+    }
+
+    /* Loading animation improvements */
+    .btn.loading {
+      position: relative;
+      color: transparent !important;
+    }
+
+    .btn.loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header with Theme Toggle and Logout -->
+    <div class="header">
+      <div class="header-left">
+        <img src="{{ url_for('static', filename='images/pawg_patch.png') }}" alt="PAWG Patch" class="patch">
+        <h1>{{ applicable_wing }} COV Inspections</h1>
+      </div>
+      <div class="header-right">
+        <div class="user-info" id="userInfo"{% if show_login %} style="display: none;"{% endif %}>
+          <span id="userIcon">👤</span>
+          <span id="userText"><!-- User info will be populated by JavaScript --></span>
+        </div>
+        <div class="mass-mode-indicator" id="massModeIndicator" style="display: none; background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+          🔄 Mass Mode
+        </div>
+        <div class="header-controls">
+          <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">
+            <span id="themeIcon">🌙</span>
+            <span id="themeText">Dark Mode</span>
+          </button>
+          <button class="logout-btn" onclick="logout()" id="logoutBtn"{% if show_login %} style="display: none;"{% endif %}>
+            <span>🚪</span>
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb hidden" id="breadcrumb">
+      <a href="#" class="breadcrumb-item" onclick="goToStep(1)">Login</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="#" class="breadcrumb-item" onclick="goToStep(2)">Vehicle Info</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="#" class="breadcrumb-item" onclick="goToStep(3)">Fluids</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="#" class="breadcrumb-item" onclick="goToStep(4)">Checklist 1</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="#" class="breadcrumb-item" onclick="goToStep(5)">Checklist 2</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="#" class="breadcrumb-item" onclick="goToStep(6)">Checklist 3</a>
+      <span class="breadcrumb-separator">›</span>
+      <a href="#" class="breadcrumb-item" onclick="goToStep(7)">Notes</a>
+    </div>
+
+  <!-- Login Section -->
+    <div class="section{% if not show_login %} hidden{% endif %}" id="loginSection">
+      <h2>Inspector Login</h2>
+      
+      {% if google_oauth %}
+        <!-- Google OAuth Login -->
+        <div class="form-group">
+          <p>Please sign in with your Google account to access the inspection system.</p>
+          <div class="btn-group">
+            <a href="/google_login" class="btn btn-primary">
+              <span>🔐 Sign in with Google</span>
+            </a>
+          </div>
+        </div>
+      {% else %}
+        <!-- CAPID Login -->
+        <div class="form-group">
+          <label for="capidInput">Enter Your CAPID:</label>
+          <input type="text" id="capidInput" class="form-control" placeholder="Enter your CAPID number" value="">
+          <div id="capidError" class="alert alert-danger hidden">CAPID not found. Please check your number and try again.</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="checkCAPID()" id="checkButton">
+            <span id="checkButtonText">Check CAPID</span>
+          </button>
+        </div>
+      {% endif %}
+  </div>
+
+  <!-- CAPID Confirmation -->
+    <div class="section hidden" id="confirmSection">
+      <h2>Confirm Your Identity</h2>
+      <div class="alert alert-info">
+  <p id="memberInfo"></p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="proceedToMainMenu()">Confirm</button>
+        <button class="btn btn-danger" onclick="retryCAPID()">Not Me</button>
+      </div>
+</div>
+
+  <!-- Event Selection Section -->
+    <div class="section hidden" id="eventSelectionSection">
+      <h2>Select Event</h2>
+      <div class="form-group">
+        <label for="eventSelect" id="eventSelectLabel">Choose an event:</label>
+        <select id="eventSelect" class="form-control" onchange="handleEventSelectChange()">
+          <option value="">Loading events...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="newEventInput" id="newEventLabel">Or create a new event:</label>
+        <input type="text" id="newEventInput" class="form-control" placeholder="Enter new event name">
+ </div>
+
+      <!-- Mass Inspections Mode -->
+      <div class="form-group" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="massInspectionMode" style="transform: scale(1.2);">
+          <label for="massInspectionMode" style="margin: 0; font-weight: 600; color: var(--primary);">
+            🔄 Mass Inspections Mode
+          </label>
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+          When enabled, after submitting an inspection you'll return to Step 1 for the next COV instead of the main menu.
+        </div>
+ </div>
+
+      <div id="eventError" class="alert alert-danger hidden"></div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="selectEvent()" id="selectEventButton">
+          <span id="selectEventButtonText">Continue</span>
+        </button>
+        <button class="btn btn-secondary" onclick="backFromEventSelection()">← Back</button>
+      </div>
+ </div>
+
+  <!-- Event Selection for Attach Videos Section -->
+  <div class="section hidden" id="eventSelectionAttachSection">
+    <div class="btn-group" style="margin-bottom: 1rem;">
+      <button class="btn btn-secondary" onclick="backToMainMenu()">← Back to Menu</button>
+    </div>
+    <h2>Select Event for Video Attachment</h2>
+    <div class="form-group">
+      <label for="eventSelectAttach">Choose an event:</label>
+      <select id="eventSelectAttach" class="form-control">
+        <option value="">Loading events...</option>
+      </select>
+ </div>
+
+    <div id="eventErrorAttach" class="alert alert-danger hidden"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="selectEventForAttach()" id="selectEventAttachButton">
+        <span id="selectEventAttachButtonText">Continue</span>
+      </button>
+      <button class="btn btn-secondary" onclick="backToMainMenuFromEventAttach()">← Back</button>
+    </div>
+  </div>
+
+    <!-- Main Menu -->
+    <div class="section{% if show_login %} hidden{% endif %}" id="mainMenu">
+      <h2>Choose an Option</h2>
+      
+      <!-- Mass Mode Status -->
+      <div id="massModeStatus" class="alert alert-info" style="display: none; margin-bottom: 1rem; background: var(--primary); color: white; border: none;">
+        <strong>🔄 Mass Inspections Mode Active</strong><br>
+        <small>You'll return to Step 1 after each inspection instead of this menu.</small>
+        <button class="btn btn-sm" onclick="exitMassMode()" style="margin-left: 1rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+          Exit Mass Mode
+        </button>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="showInspectedVans()">
+          Inspected COVs List
+        </button>
+        <button class="btn btn-success" onclick="startInspection()">
+          New Inspection
+        </button>
+        <button class="btn btn-warning" onclick="openAttachVideos()">
+          Attach Videos
+        </button>
+        {% if not google_oauth %}
+        <button class="btn btn-info" onclick="window.location.href='/admin_login'">
+          Admin Panel
+        </button>
+        {% endif %}
+      </div>
+ </div>
+
+ <!-- Inspected COVs List Section -->
+    <div class="section hidden" id="inspectedVansSection">
+      <div class="btn-group" style="margin-bottom: 1rem;">
+        <button class="btn btn-secondary" onclick="backToMainMenu()">← Back to Menu</button>
+      </div>
+   <h2>Inspected COVs List</h2>
+      
+      <!-- Sorting Controls -->
+      <div class="sorting-controls" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <div>
+            <label for="sortSelect" style="font-weight: 500; margin-right: 0.5rem;">Sort by:</label>
+            <select id="sortSelect" class="form-control" style="width: auto; display: inline-block;" onchange="applySorting()">
+              <option value="created_at">Date (Newest First)</option>
+              <option value="van_date">COV Number, then Date</option>
+              <option value="van_inspector_date">COV Number, Inspector, Date</option>
+              <option value="date_van">Date, then COV Number</option>
+              <option value="event_date">Event, then Date</option>
+              <option value="van_number">COV Number Only</option>
+              <option value="inspector_id">Inspector Only</option>
+            </select>
+          </div>
+          <div>
+            <label for="eventFilter" style="font-weight: 500; margin-right: 0.5rem;">Filter by Event:</label>
+            <select id="eventFilter" class="form-control" style="width: auto; display: inline-block;" onchange="applySorting()">
+              <option value="">All Events</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="refreshInspectedVans()" style="margin-left: auto;">
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-controls" style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: space-between;">
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <label for="perPageSelect" style="font-weight: 500;">Per page:</label>
+            <select id="perPageSelect" class="form-control" style="width: auto; display: inline-block;" onchange="changePerPage()">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div id="paginationInfo" style="font-weight: 500; color: var(--text-secondary);"></div>
+          <div id="paginationButtons" style="display: flex; gap: 0.5rem;"></div>
+        </div>
+      </div>
+      
+      <div id="inspectionsList">
+        <!-- Inspections will be dynamically loaded here -->
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="backToMainMenu()">← Back to Menu</button>
+      </div>
+ </div>
+
+<!-- Inspection Detail Modal -->
+<div class="modal" id="inspectionDetailModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Inspection Details</h3>
+      <span class="close" onclick="closeInspectionModal()">&times;</span>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Inspection details will be loaded here -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-warning" id="replaceVideoBtn" onclick="showReplaceVideoModal()" style="display: none;">Replace Video</button>
+      <button class="btn btn-secondary" onclick="closeInspectionModal()">Close</button>
+    </div>
+  </div>
+ </div>
+
+<!-- Replace Video Modal -->
+<div class="modal" id="replaceVideoModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Replace Video</h3>
+      <span class="close" onclick="closeReplaceVideoModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p>Select a new video to replace the current inspection video. The original video will be archived with an audit trail.</p>
+      <form id="replaceVideoForm" enctype="multipart/form-data">
+        <input type="hidden" id="replaceInspectionId">
+        <input type="hidden" id="replaceInspectorId">
+        <div class="form-group">
+          <label for="replaceVideoFile">New Video File:</label>
+          <input type="file" id="replaceVideoFile" name="inspection_video" accept="video/*" required>
+        </div>
+        <div class="form-group">
+          <button type="button" class="btn btn-primary" onclick="submitReplaceVideo()">Replace Video</button>
+          <button type="button" class="btn btn-secondary" onclick="closeReplaceVideoModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <!-- Vehicle Inspection Form (Page 1 of 6) -->
+    <div class="section hidden" id="inspectionFormSection">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2>Vehicle Information <span id="pageIndicator">(Step 1 of 6)</span></h2>
+        <div id="massModeExitButton" style="display: none;">
+          <button class="btn btn-sm" onclick="exitMassModeFromInspection()" style="background: var(--danger); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.9rem;">
+            🚪 Exit Mass Mode
+          </button>
+        </div>
+      </div>
+    <form id="inspectionForm" enctype="multipart/form-data" autocomplete="off">
+        <div class="form-group">
+          <label for="dateField">Date/Time:</label>
+          <input type="text" id="dateField" name="date" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="inspector_id">Inspector ID (CAPID):</label>
+          <input type="text" id="inspector_id" name="inspector_id" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="event_name">Event:</label>
+          <input type="text" id="event_name" name="event_name" class="form-control" readonly>
+        </div>
+        
+        <div class="form-group">
+          <label for="van_number">COV Number:</label>
+          <input type="text" id="van_number" name="van_number" class="form-control" oninput="validateVanNumber()" placeholder="Enter COV number">
+          <div id="van_status" class="status-indicator hidden"></div>
+        </div>
+        
+        <div class="form-group" id="vin_group" style="display: none;">
+          <label for="vin_display">Vehicle Identification Number:</label>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="text" id="vin_display" readonly style="flex: 1;" class="form-control">
+            <button type="button" id="vin_correct" class="btn btn-success" style="background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 500;">Correct</button>
+            <button type="button" id="vin_incorrect" class="btn btn-danger" style="background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 8px; font-weight: 500;">Incorrect</button>
+          </div>
+          <input type="hidden" id="vin_display_hidden" name="vin_display_hidden" value="">
+          <input type="hidden" id="vin_confirmed" name="vin_confirmed" value="">
+        </div>
+        
+        <div class="form-group">
+          <label for="license_plate">License Plate:</label>
+          <input type="text" id="license_plate" name="license_plate" class="form-control" placeholder="Enter license plate">
+        </div>
+        
+        <div class="form-group">
+          <label for="odometer_in">Odometer (miles):</label>
+          <input type="number" id="odometer_in" name="odometer_in" class="form-control" placeholder="Enter odometer reading">
+        </div>
+        
+        <div class="form-group">
+          <label for="inspection_sticker">Inspection Sticker (MM/YY):</label>
+          <input type="text" id="inspection_sticker" name="inspection_sticker" class="form-control" maxlength="5" oninput="formatInspectionSticker()" placeholder="MM/YY">
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" onclick="backToMainMenuFromInspection()">← Back to Main Menu</button>
+          <button type="button" class="btn btn-primary" onclick="continueToArrivalFluids()">Next →</button>
+      </div>
+    </form>
+  </div>
+
+<!-- Inspection Checklist: Arrival Fluids (Page 2 of 6) -->
+    <div class="section hidden" id="arrivalFluidsSection">
+      <h2>Arrival Fluid Levels <span>(Step 2 of 6)</span></h2>
+
+  <!-- Fuel -->
+      <div class="form-group">
+        <label for="fuel_level_slider">Fuel Level:</label>
+        <div class="slider-container fuel-slider">
+    <span>E</span>
+          <input type="range" id="fuel_level_slider" class="slider" min="0" max="8" step="1" value="0" oninput="updateFuelLevel(this.value)">
+    <span>F</span>
+          <div class="slider-value">
+            <input type="number" id="fuel_level_input" name="arrival_fuel_level" min="0" max="8" step="1" class="form-control" placeholder="0" oninput="updateFuelSlider(this.value)"> /8
+          </div>
+        </div>
+  </div>
+
+  <!-- Oil -->
+      <div class="form-group">
+        <label for="arrival_oil_slider">Oil Level:</label>
+        <div class="slider-container fluid-slider">
+    <span>Min</span>
+          <input type="range" id="arrival_oil_slider" class="slider" min="0" max="4" step="1" value="0" oninput="updateOilLevel(this.value)">
+    <span>Max</span>
+          <div class="slider-value">
+            <input type="number" id="arrival_oil_input" name="arrival_oil_level" min="0" max="4" step="1" class="form-control" placeholder="0" oninput="updateOilSlider(this.value)"> /4
+          </div>
+        </div>
+  </div>
+
+  <!-- Windshield Wiper Fluid -->
+      <div class="form-group">
+        <label for="arrival_wiper_fluid_slider">Windshield Wiper Fluid:</label>
+        <div class="slider-container fluid-slider">
+    <span>Min</span>
+          <input type="range" id="arrival_wiper_fluid_slider" class="slider" min="0" max="4" step="1" value="0" oninput="updateWiperFluidLevel(this.value)">
+    <span>Max</span>
+          <div class="slider-value">
+            <input type="number" id="arrival_wiper_fluid_input" name="arrival_wiper_fluid_level" min="0" max="4" step="1" class="form-control" placeholder="0" oninput="updateWiperFluidSlider(this.value)"> /4
+          </div>
+        </div>
+  </div>
+
+  <!-- Power Steering Fluid -->
+      <div class="form-group">
+        <label for="arrival_power_steering_slider">Power Steering Fluid:</label>
+        <div class="slider-container fluid-slider">
+    <span>Min</span>
+          <input type="range" id="arrival_power_steering_slider" class="slider" min="0" max="4" step="1" value="0" oninput="updatePowerSteeringLevel(this.value)">
+    <span>Max</span>
+          <div class="slider-value">
+            <input type="number" id="arrival_power_steering_input" name="arrival_power_steering_level" min="0" max="4" step="1" class="form-control" placeholder="0" oninput="updatePowerSteeringSlider(this.value)"> /4
+          </div>
+        </div>
+  </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="backToInspectionForm()">← Back</button>
+        <button type="button" class="btn btn-primary" onclick="continueToChecklist()">Next →</button>
+  </div>
+</div>
+
+
+  <!-- Inspection Checklist (Part 1 - Page 3 of 6) -->
+    <div class="section hidden" id="checklistSection">
+      <h2>Inspection Checklist: Part 1 <span id="pageIndicator2">(Step 3 of 6)</span></h2>
+      
+      <div class="form-group">
+        <label>🚐 Body Condition:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('body', 'Yes')">
+            <input type="radio" name="body" value="Yes" id="body_yes">
+            <label for="body_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('body', 'No')">
+            <input type="radio" name="body" value="No" id="body_no" checked>
+            <label for="body_no">✗ No</label>
+    </div>
+    </div>
+    </div>
+
+      <div class="form-group">
+        <label>🏷️ Branding:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('branding', 'Yes')">
+            <input type="radio" name="branding" value="Yes" id="branding_yes">
+            <label for="branding_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('branding', 'No')">
+            <input type="radio" name="branding" value="No" id="branding_no" checked>
+            <label for="branding_no">✗ No</label>
+    </div>
+    </div>
+    </div>
+
+      <div class="form-group">
+        <label>🛞 Tire Pressure Stickers:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('tire_press', 'Yes')">
+            <input type="radio" name="tire_press" value="Yes" id="tire_press_yes">
+            <label for="tire_press_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('tire_press', 'No')">
+            <input type="radio" name="tire_press" value="No" id="tire_press_no" checked>
+            <label for="tire_press_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <label>🔍 Inspection Sticker:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('inspection', 'Yes')">
+            <input type="radio" name="inspection" value="Yes" id="inspection_yes">
+            <label for="inspection_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('inspection', 'No')">
+            <input type="radio" name="inspection" value="No" id="inspection_no" checked>
+            <label for="inspection_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📄 Registration:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('registration', 'Yes')">
+            <input type="radio" name="registration" value="Yes" id="registration_yes">
+            <label for="registration_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('registration', 'No')">
+            <input type="radio" name="registration" value="No" id="registration_no" checked>
+            <label for="registration_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📋 Inspection Card:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('inspection_card', 'Yes')">
+            <input type="radio" name="inspection_card" value="Yes" id="inspection_card_yes">
+            <label for="inspection_card_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('inspection_card', 'No')">
+            <input type="radio" name="inspection_card" value="No" id="inspection_card_no" checked>
+            <label for="inspection_card_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📚 Van Book:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('van_book', 'Yes')">
+            <input type="radio" name="van_book" value="Yes" id="van_book_yes">
+            <label for="van_book_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('van_book', 'No')">
+            <input type="radio" name="van_book" value="No" id="van_book_no" checked>
+            <label for="van_book_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📝 Form 132:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('form_132', 'Yes')">
+            <input type="radio" name="form_132" value="Yes" id="form_132_yes">
+            <label for="form_132_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('form_132', 'No')">
+            <input type="radio" name="form_132" value="No" id="form_132_no" checked>
+            <label for="form_132_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>💳 Shell Card:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('shell_card', 'Yes')">
+            <input type="radio" name="shell_card" value="Yes" id="shell_card_yes">
+            <label for="shell_card_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('shell_card', 'No')">
+            <input type="radio" name="shell_card" value="No" id="shell_card_no" checked>
+            <label for="shell_card_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="backToArrivalFluids()">← Back</button>
+        <button type="button" class="btn btn-primary" onclick="continueToChecklist2()">Next →</button>
+	</div>
+  </div>
+
+  <!-- Inspection Checklist (Part 2 - Page 4 of 6) -->
+    <div class="section hidden" id="checklistSection2">
+      <h2>🔧 Inspection Checklist: Part 2 <span id="pageIndicator3">(Step 4 of 6)</span></h2>
+      
+      <div class="form-group">
+        <label>🛢️ Oil Level:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('oil_level', 'Yes')">
+            <input type="radio" name="oil_level" value="Yes" id="oil_level_yes">
+            <label for="oil_level_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('oil_level', 'No')">
+            <input type="radio" name="oil_level" value="No" id="oil_level_no" checked>
+            <label for="oil_level_no">✗ No</label>
+    </div>
+    </div>
+    </div>
+
+      <div class="form-group">
+        <label>🧊 Antifreeze Level:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('antifreeze_level', 'Yes')">
+            <input type="radio" name="antifreeze_level" value="Yes" id="antifreeze_level_yes">
+            <label for="antifreeze_level_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('antifreeze_level', 'No')">
+            <input type="radio" name="antifreeze_level" value="No" id="antifreeze_level_no" checked>
+            <label for="antifreeze_level_no">✗ No</label>
+    </div>
+    </div>
+    </div>
+
+      <div class="form-group">
+        <label>🔧 Power Steering:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('power_steering', 'Yes')">
+            <input type="radio" name="power_steering" value="Yes" id="power_steering_yes">
+            <label for="power_steering_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('power_steering', 'No')">
+            <input type="radio" name="power_steering" value="No" id="power_steering_no" checked>
+            <label for="power_steering_no">✗ No</label>
+    </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🔋 Battery:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('battery', 'Yes')">
+            <input type="radio" name="battery" value="Yes" id="battery_yes">
+            <label for="battery_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('battery', 'No')">
+            <input type="radio" name="battery" value="No" id="battery_no" checked>
+            <label for="battery_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📢 Horn:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('horn', 'Yes')">
+            <input type="radio" name="horn" value="Yes" id="horn_yes">
+            <label for="horn_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('horn', 'No')">
+            <input type="radio" name="horn" value="No" id="horn_no" checked>
+            <label for="horn_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🔙 Backup Lights:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('backup_lights', 'Yes')">
+            <input type="radio" name="backup_lights" value="Yes" id="backup_lights_yes">
+            <label for="backup_lights_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('backup_lights', 'No')">
+            <input type="radio" name="backup_lights" value="No" id="backup_lights_no" checked>
+            <label for="backup_lights_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📹 Backup Camera:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('backup_camera', 'Yes')">
+            <input type="radio" name="backup_camera" value="Yes" id="backup_camera_yes">
+            <label for="backup_camera_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('backup_camera', 'No')">
+            <input type="radio" name="backup_camera" value="No" id="backup_camera_no" checked>
+            <label for="backup_camera_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🚨 Backup Alarm:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('backup_alarm', 'Yes')">
+            <input type="radio" name="backup_alarm" value="Yes" id="backup_alarm_yes">
+            <label for="backup_alarm_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('backup_alarm', 'No')">
+            <input type="radio" name="backup_alarm" value="No" id="backup_alarm_no" checked>
+            <label for="backup_alarm_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>💡 Head Lights:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('head_lights', 'Yes')">
+            <input type="radio" name="head_lights" value="Yes" id="head_lights_yes">
+            <label for="head_lights_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('head_lights', 'No')">
+            <input type="radio" name="head_lights" value="No" id="head_lights_no" checked>
+            <label for="head_lights_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🛑 Brake Lights:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('brake_lights', 'Yes')">
+            <input type="radio" name="brake_lights" value="Yes" id="brake_lights_yes">
+            <label for="brake_lights_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('brake_lights', 'No')">
+            <input type="radio" name="brake_lights" value="No" id="brake_lights_no" checked>
+            <label for="brake_lights_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="backToChecklist()">← Back</button>
+        <button type="button" class="btn btn-primary" onclick="continueToChecklist3()">Next →</button>
+	</div>
+  </div>
+
+  <!-- Inspection Checklist (Part 3 - Page 5 of 6) -->
+    <div class="section hidden" id="checklistSection3">
+      <h2>🚦 Inspection Checklist: Part 3 <span id="pageIndicator4">(Step 5 of 6)</span></h2>
+      
+      <div class="form-group">
+        <label>↩️ Turn Signals:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('turn_signals', 'Yes')">
+            <input type="radio" name="turn_signals" value="Yes" id="turn_signals_yes">
+            <label for="turn_signals_yes">✓ Yes</label>
+    </div>
+          <div class="radio-item selected" onclick="selectRadio('turn_signals', 'No')">
+            <input type="radio" name="turn_signals" value="No" id="turn_signals_no" checked>
+            <label for="turn_signals_no">✗ No</label>
+    </div>
+    </div>
+      </div>
+
+      <div class="form-group">
+        <label>🪟 Windshield:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('windshield', 'Yes')">
+            <input type="radio" name="windshield" value="Yes" id="windshield_yes">
+            <label for="windshield_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('windshield', 'No')">
+            <input type="radio" name="windshield" value="No" id="windshield_no" checked>
+            <label for="windshield_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>⚠️ Hazard Lights:</label>
+        <div class="radio-group">
+          <div class="radio-item" onclick="selectRadio('hazard_lights', 'Yes')">
+            <input type="radio" name="hazard_lights" value="Yes" id="hazard_lights_yes">
+            <label for="hazard_lights_yes">✓ Yes</label>
+          </div>
+          <div class="radio-item selected" onclick="selectRadio('hazard_lights', 'No')">
+            <input type="radio" name="hazard_lights" value="No" id="hazard_lights_no" checked>
+            <label for="hazard_lights_no">✗ No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="tire_fl">🛞 Front Left Tire Date Code:</label>
+        <input type="text" id="tire_fl" name="tire_fl" class="form-control" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      
+      <div class="form-group">
+        <label for="tire_fr">🛞 Front Right Tire Date Code:</label>
+        <input type="text" id="tire_fr" name="tire_fr" class="form-control" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      
+      <div class="form-group">
+        <label for="tire_rl">🛞 Rear Left Tire Date Code:</label>
+        <input type="text" id="tire_rl" name="tire_rl" class="form-control" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      
+      <div class="form-group">
+        <label for="tire_rr">🛞 Rear Right Tire Date Code:</label>
+        <input type="text" id="tire_rr" name="tire_rr" class="form-control" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      
+      <div class="form-group">
+        <label for="tire_spare">🛞 Spare Tire Date Code:</label>
+        <input type="text" id="tire_spare" name="tire_spare" class="form-control" placeholder="1234" maxlength="4" pattern="[0-9]{4}">
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="backToChecklist2()">← Back</button>
+        <button type="button" class="btn btn-primary" onclick="continueToNotes()">Next →</button>
+	</div>
+  </div>
+
+  <!-- Notes Section (Page 6 of 6) -->
+    <div class="section hidden" id="notesSection">
+      <h2>Final Notes & Video <span id="pageIndicator5">(Step 6 of 6)</span></h2>
+      
+      <div class="form-group">
+        <label for="engine_oil">Engine Oil Added (quarts):</label>
+        <input type="number" id="engine_oil" name="engine_oil" class="form-control" placeholder="Enter quarts added" step="0.1" min="0">
+      </div>
+      
+      <div class="form-group">
+        <label for="transmission_fluid">Transmission Fluid Added (quarts):</label>
+        <input type="number" id="transmission_fluid" name="transmission_fluid" class="form-control" placeholder="Enter quarts added" step="0.1" min="0">
+      </div>
+      
+      <div class="form-group">
+        <label for="wiper_fluid">Windshield Wiper Fluid Added (gallons):</label>
+        <input type="number" id="wiper_fluid" name="wiper_fluid" class="form-control" placeholder="Enter gallons added" step="0.1" min="0">
+      </div>
+      
+      <div class="form-group">
+        <label for="inspection_video">Inspection Walk-Around Video (Optional):</label>
+        <input type="file" id="inspection_video" name="inspection_video" class="form-control" accept="video/*">
+        <small class="text-muted">Upload a video of your walk-around inspection. Video can be attached later if not available now.</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="comments">Additional Comments:</label>
+        <textarea id="comments" name="comments" class="form-control" rows="4" maxlength="250" placeholder="Enter any additional notes or comments about the inspection"></textarea>
+        <small class="text-muted">Maximum 250 characters</small>
+      </div>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary" onclick="backToChecklist3()">← Back</button>
+        <button type="button" class="btn btn-success" onclick="submitInspection()" id="submitButton">
+          <span id="submitButtonText">Submit Inspection</span>
+        </button>
+	</div>
+  </div>
+
+  <!-- Attach Videos Section -->
+    <div class="section hidden" id="attachVideosSection">
+    <h2>Attach Videos</h2>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="backToMenu()">← Back to Menu</button>
+      </div>
+      
+      <div id="missingList" class="mt-4"></div>
+      
+    <div id="attachForm" class="hidden">
+        <h3>Attach Video to Inspection</h3>
+        <div class="alert alert-info">
+          <p><strong>COV #:</strong> <span id="attach_van_display"></span></p>
+          <p><strong>Inspector:</strong> <span id="attach_inspector_display"></span></p>
+        </div>
+        
+      <input type="hidden" id="attach_van_number" name="van_number">
+      <input type="hidden" id="attach_inspector_id" name="inspector_id">
+        
+        <div class="form-group">
+          <label for="attach_inspection_video">Select Video File:</label>
+          <input type="file" id="attach_inspection_video" name="inspection_video" class="form-control" accept="video/*" required>
+          <small class="text-muted">Select a video file to attach to this inspection</small>
+        </div>
+        
+        <div class="btn-group">
+          <button type="button" class="btn btn-success" onclick="submitAttach()" id="attachSubmitButton">
+            <span id="attachSubmitButtonText">Submit Video</span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="cancelAttach()">Cancel</button>
+        </div>
+  </div>
+</div>
+
+<!-- New Event Confirmation Modal -->
+<div class="modal" id="newEventModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Create New Event</h3>
+      <span class="close" onclick="closeNewEventModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p>You are about to create a new event. This will allow you to organize inspections under this event name.</p>
+      <p style="color: var(--warning-dark); font-weight: 600; margin-bottom: 1rem;">⚠️ The system will check for duplicate or similar event names to prevent confusion.</p>
+      <div class="form-group">
+        <label for="newEventNameInput">Event Name:</label>
+        <input type="text" id="newEventNameInput" class="form-control" placeholder="Enter event name">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="createNewEvent()">Create Event</button>
+      <button class="btn btn-secondary" onclick="closeNewEventModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Similar Events Modal -->
+<div class="modal" id="similarEventsModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Similar Events Found</h3>
+      <span class="close" onclick="closeSimilarEventsModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p>We found similar event names. Did you mean one of these instead?</p>
+      <div id="similarEventsList" style="margin: 1rem 0;">
+        <!-- Similar events will be populated here -->
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;">Or you can create the new event anyway if it's intentionally different.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="createNewEventAnyway()">Create New Anyway</button>
+      <button class="btn btn-secondary" onclick="closeSimilarEventsModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <script>
+    // Theme Management
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    
+    function toggleTheme() {
+      // flip between light and dark - pretty simple
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('theme', currentTheme);
+      
+      const themeIcon = document.getElementById('themeIcon');
+      const themeText = document.getElementById('themeText');
+      
+      if (currentTheme === 'dark') {
+        themeIcon.textContent = '☀️';
+        themeText.textContent = 'Light Mode';
+      } else {
+        themeIcon.textContent = '🌙';
+        themeText.textContent = 'Dark Mode';
+      }
+    }
+
+    // Progress Management
+    let currentStep = 1;
+    const totalSteps = 6;
+    
+    function updateProgress(step) {
+      currentStep = step;
+      const progressFill = document.getElementById('progressFill');
+      const progressText = document.getElementById('progressText');
+      const progressContainer = document.getElementById('progressContainer');
+      
+      if (progressFill && progressText) {
+        const percentage = (step / totalSteps) * 100;
+        progressFill.style.width = percentage + '%';
+        progressText.textContent = `Step ${step} of ${totalSteps}`;
+        progressContainer.classList.remove('hidden');
+      }
+    }
+
+    // Breadcrumb Management
+    function updateBreadcrumb(activeStep) {
+      const breadcrumbItems = document.querySelectorAll('.breadcrumb-item');
+      breadcrumbItems.forEach((item, index) => {
+        item.classList.remove('active');
+        if (index === activeStep - 1) {
+          item.classList.add('active');
+        }
+      });
+    }
+
+    function updateMassModeIndicator() {
+      const massModeIndicator = document.getElementById('massModeIndicator');
+      const massModeStatus = document.getElementById('massModeStatus');
+      const massModeExitButton = document.getElementById('massModeExitButton');
+      const massInspectionMode = localStorage.getItem('massInspectionMode') === 'true';
+      
+      if (massInspectionMode) {
+        massModeIndicator.style.display = 'block';
+        if (massModeStatus) massModeStatus.style.display = 'block';
+        if (massModeExitButton) massModeExitButton.style.display = 'block';
+      } else {
+        massModeIndicator.style.display = 'none';
+        if (massModeStatus) massModeStatus.style.display = 'none';
+        if (massModeExitButton) massModeExitButton.style.display = 'none';
+      }
+    }
+
+    function exitMassMode() {
+      localStorage.setItem('massInspectionMode', 'false');
+      updateMassModeIndicator();
+      clearMassModeCheckbox();
+      showSuccessMessage("Mass Inspections Mode disabled");
+    }
+
+    function exitMassModeFromInspection() {
+      localStorage.setItem('massInspectionMode', 'false');
+      updateMassModeIndicator();
+      clearMassModeCheckbox();
+      showSuccessMessage("Mass Inspections Mode disabled");
+      
+      // Clear form fields
+      resetInspectionForm();
+      
+      // Return to main menu
+      document.getElementById("inspectionFormSection").classList.add("hidden");
+      document.getElementById("mainMenu").classList.remove("hidden");
+    }
+
+    function clearMassModeCheckbox() {
+      const massModeCheckbox = document.getElementById('massInspectionMode');
+      if (massModeCheckbox) {
+        massModeCheckbox.checked = false;
+      }
+    }
+
+    // radio button stuff - had to make these work with touch
+    function selectRadio(name, value) {
+      // remove selected from all radios with this name
+      document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+        radio.closest('.radio-item').classList.remove('selected');
+      });
+      
+      // add selected to the one we clicked
+      const selectedRadio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+      if (selectedRadio) {
+        selectedRadio.checked = true;
+        selectedRadio.closest('.radio-item').classList.add('selected');
+        localStorage.setItem(name, value);
+      }
+    }
+
+    // tire date code validation - had to figure out the week calculation
+    function validateTireDateCode(code) {
+      if (!code || code.length !== 4) return false;
+      
+      const week = parseInt(code.substring(0, 2));
+      const year = parseInt('20' + code.substring(2, 4));
+      
+      // basic validation
+      if (week < 1 || week > 53 || year < 2000 || year > 2099) return false;
+      
+      return { week, year };
+    }
+
+    function getCurrentWeek() {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 1);
+      const days = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+      return Math.ceil((days + start.getDay() + 1) / 7);
+    }
+
+    function checkTireAge(code, tireName) {
+      const tireData = validateTireDateCode(code);
+      if (!tireData) return;
+      
+      const currentYear = new Date().getFullYear();
+      const currentWeek = getCurrentWeek();
+      
+      // calculate age more accurately - convert to total weeks since year 0
+      const currentTotalWeeks = (currentYear * 52.1775) + currentWeek;
+      const tireTotalWeeks = (tireData.year * 52.1775) + tireData.week;
+      
+      const ageInWeeks = currentTotalWeeks - tireTotalWeeks;
+      const ageInYears = ageInWeeks / 52.1775;
+      
+      if (ageInYears > 6) {
+        showTireAgeWarning(tireName, tireData.year, tireData.week, Math.round(ageInYears * 10) / 10);
+      }
+    }
+
+    function showTireAgeWarning(tireName, year, week, age) {
+      const message = `⚠️ WARNING: ${tireName} tire is ${age} years old!\n\n` +
+                     `Manufactured: Week ${week} of ${year}\n` +
+                     `Tires older than 6 years should be replaced for safety.`;
+      
+      // create custom modal instead of alert
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+          <div class="modal-header">
+            <h3>⚠️ Tire Age Warning</h3>
+          </div>
+          <div class="modal-body">
+            <p style="white-space: pre-line; margin-bottom: 1rem;">${message}</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-warning" onclick="this.closest('.modal').remove()">
+              ACKNOWLEDGE
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    // tire code inputs now use custom number pad - no need for keyboard listeners
+
+    // Loading States
+    function setLoading(element, loading) {
+      if (loading) {
+        element.classList.add('loading');
+        element.disabled = true;
+      } else {
+        element.classList.remove('loading');
+        element.disabled = false;
+      }
+    }
+
+    // Auto-save functionality
+    function autoSave() {
+      const formData = new FormData(document.getElementById('inspectionForm'));
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        data[key] = value;
+      }
+      localStorage.setItem('inspectionDraft', JSON.stringify(data));
+    }
+
+    // Load draft data
+    function loadDraft() {
+      // Only load draft if we're on the inspection form
+      const inspectionForm = document.getElementById('inspectionFormSection');
+      if (!inspectionForm || inspectionForm.classList.contains('hidden')) {
+        return;
+      }
+      
+      const draft = localStorage.getItem('inspectionDraft');
+      if (draft) {
+        const data = JSON.parse(draft);
+        Object.keys(data).forEach(key => {
+          const element = document.querySelector(`[name="${key}"]`);
+          if (element) {
+            element.value = data[key];
+          }
+        });
+      }
+    }
+
+    // Utility Functions
+    function formatInspectionSticker() {
+      let input = document.getElementById("inspection_sticker");
+      let value = input.value.replace(/\D/g, '');
+      if (value.length >= 3) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+      }
+      input.value = value;
+    }
+
+    function validateVanNumber() {
+      let vanNumber = document.getElementById("van_number").value.trim();
+      let statusElement = document.getElementById("van_status");
+      if (!vanNumber) {
+        statusElement.innerHTML = "";
+        statusElement.className = "status-indicator hidden";
+        return;
+      }
+      
+      statusElement.innerHTML = "Checking...";
+      statusElement.className = "status-indicator status-loading";
+      
+      fetch('/check_van', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ van_number: vanNumber })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === "valid") {
+          statusElement.innerHTML = "✓ VALID";
+          statusElement.className = "status-indicator status-valid";
+          
+          // Show VIN field if VIN is available
+          if (data.vin_id) {
+            document.getElementById('vin_display').value = data.vin_id;
+            document.getElementById('vin_display_hidden').value = data.vin_id; // Store VIN in hidden field
+            document.getElementById('vin_group').style.display = 'block';
+            // Reset VIN confirmation
+            document.getElementById('vin_confirmed').value = '';
+            vinConfirmed = null;
+            
+            // Reset buttons and remove any existing confirmation message
+            const correctBtn = document.getElementById('vin_correct');
+            const incorrectBtn = document.getElementById('vin_incorrect');
+            const confirmationMsg = document.getElementById('vin_confirmation_message');
+            
+            // Show buttons and reset their state
+            correctBtn.style.display = 'inline-block';
+            incorrectBtn.style.display = 'inline-block';
+            correctBtn.disabled = false;
+            incorrectBtn.disabled = false;
+            correctBtn.style.backgroundColor = '#28a745';
+            correctBtn.style.border = 'none';
+            incorrectBtn.style.backgroundColor = '#dc3545';
+            incorrectBtn.style.border = 'none';
+            
+            // Add direct event listeners as fallback
+            correctBtn.onclick = function() {
+                console.log('Direct VIN Correct button clicked');
+                handleVINConfirmation(true);
+            };
+            incorrectBtn.onclick = function() {
+                console.log('Direct VIN Incorrect button clicked');
+                handleVINConfirmation(false);
+            };
+            
+            // Remove any existing confirmation message
+            if (confirmationMsg) {
+                confirmationMsg.remove();
+            }
+          } else {
+            document.getElementById('vin_group').style.display = 'none';
+            document.getElementById('vin_display_hidden').value = ''; // Clear stored VIN
+            document.getElementById('vin_confirmed').value = '';
+            vinConfirmed = null;
+            // Remove any existing confirmation message
+            const confirmationMsg = document.getElementById('vin_confirmation_message');
+            if (confirmationMsg) {
+                confirmationMsg.remove();
+            }
+          }
+        } else {
+          statusElement.innerHTML = "✗ INVALID";
+          statusElement.className = "status-indicator status-invalid";
+          // Hide VIN field for invalid COV
+          document.getElementById('vin_group').style.display = 'none';
+          document.getElementById('vin_display_hidden').value = ''; // Clear stored VIN
+          document.getElementById('vin_confirmed').value = '';
+          vinConfirmed = null;
+          // Remove any existing confirmation message
+          const confirmationMsg = document.getElementById('vin_confirmation_message');
+          if (confirmationMsg) {
+              confirmationMsg.remove();
+          }
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        statusElement.innerHTML = "Error checking";
+        statusElement.className = "status-indicator status-invalid";
+        // Hide VIN field on error
+        document.getElementById('vin_group').style.display = 'none';
+        document.getElementById('vin_display_hidden').value = ''; // Clear stored VIN
+        document.getElementById('vin_confirmed').value = '';
+        vinConfirmed = null;
+        // Remove any existing confirmation message
+        const confirmationMsg = document.getElementById('vin_confirmation_message');
+        if (confirmationMsg) {
+            confirmationMsg.remove();
+        }
+      });
+    }
+
+    function getCurrentNYTime() {
+      return new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+    }
+
+    function checkCAPID() {
+      let capid = document.getElementById("capidInput").value.trim();
+      let checkButton = document.getElementById("checkButton");
+      let checkButtonText = document.getElementById("checkButtonText");
+      let capidError = document.getElementById("capidError");
+      
+      if (!capid) { 
+        capidError.textContent = "Please enter a CAPID.";
+        capidError.classList.remove("hidden");
+        return; 
+      }
+      
+      setLoading(checkButton, true);
+      checkButtonText.textContent = "Checking...";
+      capidError.classList.add("hidden");
+      
+      fetch('/check_capid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ capid })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === "found") {
+          document.getElementById("memberInfo").innerHTML = 
+            `<strong>Rank:</strong> ${data.rank}<br><strong>Name:</strong> ${data.first_name} ${data.last_name}`;
+          document.getElementById("loginSection").classList.add("hidden");
+          document.getElementById("confirmSection").classList.remove("hidden");
+          localStorage.setItem("CAPID", capid);
+          showLoggedInScreen();
+        } else {
+          capidError.textContent = "CAPID not found. Please check your number and try again.";
+          capidError.classList.remove("hidden");
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        capidError.textContent = "Error checking CAPID. Please try again.";
+        capidError.classList.remove("hidden");
+      })
+      .finally(() => {
+        setLoading(checkButton, false);
+        checkButtonText.textContent = "Check CAPID";
+      });
+    }
+
+    function showLoginScreen() {
+      // Hide all sections
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(section => section.classList.add('hidden'));
+      
+      // Show login section
+      document.getElementById('loginSection').classList.remove('hidden');
+      
+      // Hide logout button (user is not logged in)
+      document.getElementById('logoutBtn').style.display = 'none';
+      
+      // Hide user info (user is not logged in)
+      document.getElementById('userInfo').style.display = 'none';
+    }
+
+    function showLoggedInScreen() {
+      // Show logout button (user is logged in)
+      document.getElementById('logoutBtn').style.display = 'flex';
+      
+      // Show user info (user is logged in)
+      document.getElementById('userInfo').style.display = 'block';
+    }
+
+    function updateUserInfo() {
+      const userInfoDiv = document.getElementById('userInfo');
+      const userTextSpan = document.getElementById('userText');
+      const userIconSpan = document.getElementById('userIcon');
+      
+      if (userInfoDiv && userTextSpan && userIconSpan && window.userData) {
+        const memberInfo = window.userData.member_info;
+        if (memberInfo) {
+          const isAdmin = localStorage.getItem('isAdmin') === 'true';
+          const adminPrefix = isAdmin ? 'Admin: ' : '';
+          
+          // Set the text
+          userTextSpan.textContent = `${adminPrefix}${memberInfo.rank} ${memberInfo.first_name} ${memberInfo.last_name}`;
+          
+          // Set the icon (admin icon for admins, user icon for regular users)
+          userIconSpan.textContent = isAdmin ? '👑' : '👤';
+          
+          // Make it clickable for admins
+          if (isAdmin) {
+            userInfoDiv.style.cursor = 'pointer';
+            userInfoDiv.onclick = function() {
+              window.location.href = '/admin';
+            };
+          } else {
+            userInfoDiv.style.cursor = 'default';
+            userInfoDiv.onclick = null;
+          }
+        }
+      }
+    }
+
+    function logout() {
+      // Clear inspection-related data but keep theme preference
+      const theme = localStorage.getItem('theme');
+      localStorage.clear();
+      
+      // Restore theme preference
+      if (theme) {
+        localStorage.setItem('theme', theme);
+      }
+      
+      // Call server logout route to clear session
+      window.location.href = '/logout';
+    }
+
+    function proceedToEventSelection() {
+      // Set flag to track that we came from CAPID confirmation (old flow)
+      localStorage.setItem('eventSelectionSource', 'capidConfirm');
+      document.getElementById("confirmSection").classList.add("hidden");
+      document.getElementById("eventSelectionSection").classList.remove("hidden");
+      loadEvents();
+    }
+
+    function backFromEventSelection() {
+      const source = localStorage.getItem('eventSelectionSource');
+      
+      // Hide event selection section
+      document.getElementById("eventSelectionSection").classList.add("hidden");
+      
+      if (source === 'newInspection') {
+        // Came from New Inspection - go back to main menu
+      document.getElementById("mainMenu").classList.remove("hidden");
+        updateMassModeIndicator();
+      } else {
+        // Came from CAPID confirmation - go back to confirm section
+        document.getElementById("confirmSection").classList.remove("hidden");
+        showLoggedInScreen();
+      }
+      
+      // Clear the flag
+      localStorage.removeItem('eventSelectionSource');
+    }
+
+    function selectEventForAttach() {
+      const selectedEvent = document.getElementById('eventSelectAttach').value;
+      const eventError = document.getElementById('eventErrorAttach');
+      
+      // Hide any previous errors
+      eventError.classList.add('hidden');
+      
+      if (!selectedEvent) {
+        eventError.textContent = 'Please select an event.';
+        eventError.classList.remove('hidden');
+        return;
+      }
+      
+      // Store selected event and proceed to attach videos
+      localStorage.setItem('selectedEvent', selectedEvent);
+      document.getElementById("eventSelectionAttachSection").classList.add("hidden");
+      document.getElementById("attachVideosSection").classList.remove("hidden");
+      loadMissingVideos();
+    }
+
+    function backToCAPID() {
+      document.getElementById("eventSelectionSection").classList.add("hidden");
+      document.getElementById("confirmSection").classList.remove("hidden");
+      showLoggedInScreen();
+    }
+
+    function loadEvents() {
+      fetch('/events')
+        .then(response => response.json())
+        .then(events => {
+          const eventSelect = document.getElementById('eventSelect');
+          eventSelect.innerHTML = '';
+          
+          // Filter out locked events for new inspections
+          const unlockedEvents = events.filter(event => !event.is_locked);
+          
+          if (unlockedEvents.length === 0) {
+            // No unlocked events exist - show "Create New Event" as default option
+            eventSelect.innerHTML = '<option value="create_new">Create New Event</option>';
+            // Hide the existing events dropdown, show new event input
+            eventSelect.style.display = 'none';
+            document.getElementById('newEventInput').style.display = 'block';
+            document.getElementById('newEventInput').focus();
+            // Update labels
+            document.getElementById('eventSelectLabel').textContent = 'Create a new event:';
+            document.getElementById('newEventLabel').style.display = 'none';
+          } else {
+            // Unlocked events exist - show them in dropdown
+            eventSelect.style.display = 'block';
+            document.getElementById('newEventInput').style.display = 'none';
+            eventSelect.innerHTML = '<option value="">Select an event...</option>';
+            
+            unlockedEvents.forEach(event => {
+              const option = document.createElement('option');
+              option.value = event.name;
+              option.textContent = event.name;
+              eventSelect.appendChild(option);
+            });
+            
+            // Add "Other - Create New Event" option at the end
+            const createOption = document.createElement('option');
+            createOption.value = 'create_new';
+            createOption.textContent = 'Other - Create New Event';
+            eventSelect.appendChild(createOption);
+            // Update labels
+            document.getElementById('eventSelectLabel').textContent = 'Choose an event:';
+            document.getElementById('newEventLabel').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading events:', error);
+          const eventSelect = document.getElementById('eventSelect');
+          eventSelect.innerHTML = '<option value="create_new">Create New Event</option>';
+          eventSelect.style.display = 'none';
+          document.getElementById('newEventInput').style.display = 'block';
+          // Update labels for error case
+          document.getElementById('eventSelectLabel').textContent = 'Create a new event:';
+          document.getElementById('newEventLabel').style.display = 'none';
+        });
+    }
+
+    function loadEventsForAttach() {
+      fetch('/events')
+        .then(response => response.json())
+        .then(events => {
+          const eventSelect = document.getElementById('eventSelectAttach');
+          eventSelect.innerHTML = '<option value="">Select an event...</option>';
+          
+          if (events.length > 0) {
+            // Add existing events only (no create new option)
+            events.forEach(event => {
+              const option = document.createElement('option');
+              option.value = event.name;
+              option.textContent = event.name;
+              eventSelect.appendChild(option);
+            });
+          } else {
+            // No events exist
+            eventSelect.innerHTML = '<option value="">No events available</option>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading events:', error);
+          const eventSelect = document.getElementById('eventSelectAttach');
+          eventSelect.innerHTML = '<option value="">Error loading events</option>';
+        });
+    }
+
+    function handleEventSelectChange() {
+      const selectedValue = document.getElementById('eventSelect').value;
+      
+      if (selectedValue === 'create_new') {
+        // User selected "Create New Event" - show confirmation modal immediately
+        showNewEventConfirmation();
+      } else if (selectedValue && selectedValue !== 'create_new') {
+        // User selected an existing event - hide input field
+        document.getElementById('newEventInput').style.display = 'none';
+        document.getElementById('newEventInput').value = '';
+      }
+    }
+
+    function selectEvent() {
+      const selectedEvent = document.getElementById('eventSelect').value;
+      const newEvent = document.getElementById('newEventInput').value.trim();
+      const eventError = document.getElementById('eventError');
+      const massInspectionMode = document.getElementById('massInspectionMode').checked;
+      
+      
+      // Store mass inspection mode preference
+      localStorage.setItem('massInspectionMode', massInspectionMode);
+      
+      // Hide any previous errors
+      eventError.classList.add('hidden');
+      
+      // Handle different scenarios
+      if (selectedEvent === 'create_new' && !newEvent) {
+        // Show confirmation modal for creating new event
+        showNewEventConfirmation();
+        return;
+      } else if (selectedEvent && selectedEvent !== 'create_new') {
+        // User selected an existing event
+        proceedToMainMenu(selectedEvent, true);
+        return;
+      } else if (newEvent) {
+        // User entered a new event name - create it (regardless of dropdown selection)
+        // User entered a new event name - create it
+        const selectButton = document.getElementById('selectEventButton');
+        const buttonText = document.getElementById('selectEventButtonText');
+        
+        buttonText.textContent = 'Creating...';
+        selectButton.disabled = true;
+        
+        fetch('/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: newEvent,
+            inspector_id: localStorage.getItem('CAPID')
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            proceedToMainMenu(data.event.name, true);
+          } else {
+            throw new Error(data.message || 'Failed to create event');
+          }
+        })
+        .catch(error => {
+          console.error('Error creating event:', error);
+          eventError.textContent = 'Error creating event: ' + error.message;
+          eventError.classList.remove('hidden');
+        })
+        .finally(() => {
+          buttonText.textContent = 'Continue';
+          selectButton.disabled = false;
+        });
+      } else {
+        // No selection and no new event entered
+        eventError.textContent = 'Please select an existing event or enter a new event name.';
+        eventError.classList.remove('hidden');
+      }
+    }
+
+    function proceedToMainMenu(selectedEvent, startInspection = false) {
+      // Store selected event
+      if (selectedEvent) {
+        localStorage.setItem('selectedEvent', selectedEvent);
+      }
+      
+      document.getElementById("eventSelectionSection").classList.add("hidden");
+      
+      if (startInspection) {
+        // Starting a new inspection - go to inspection form
+        document.getElementById("inspectionFormSection").classList.remove("hidden");
+        updateProgress(1);
+        updateBreadcrumb(1);
+        updateMassModeIndicator(); // Show/hide mass mode indicator
+        
+        // Clear any old draft data to prevent conflicts
+        localStorage.removeItem('inspectionDraft');
+        
+        // Set the event name in the form
+        const eventField = document.getElementById("event_name");
+        if (eventField && selectedEvent) {
+          eventField.value = selectedEvent;
+        }
+        
+        // Set the date/time field from server
+        const dateField = document.getElementById("dateField");
+        if (dateField) {
+          fetch('/api/current_time')
+            .then(response => response.json())
+            .then(data => {
+              dateField.value = data.time;
+            })
+            .catch(error => {
+              console.error('Error getting server time:', error);
+              // Fallback to client time
+              dateField.value = getCurrentNYTime();
+            });
+        }
+        
+        // Set the inspector ID from session
+        const inspectorField = document.getElementById("inspector_id");
+        if (inspectorField) {
+          inspectorField.value = '{{ capid }}';
+        }
+        
+        loadDraft();
+      } else {
+        // Returning to main menu
+      document.getElementById("confirmSection").classList.add("hidden");
+      document.getElementById("mainMenu").classList.remove("hidden");
+      updateMassModeIndicator();
+      document.getElementById("dateField").value = getCurrentNYTime();
+      document.getElementById("inspector_id").value = localStorage.getItem("CAPID") || "";
+        document.getElementById("event_name").value = localStorage.getItem("selectedEvent") || "";
+        
+        // Initialize theme
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        if (currentTheme === 'dark') {
+          document.getElementById('themeIcon').textContent = '☀️';
+          document.getElementById('themeText').textContent = 'Light Mode';
+        }
+      }
+    }
+
+    function retryCAPID() {
+      document.getElementById("confirmSection").classList.add("hidden");
+      showLoginScreen();
+      document.getElementById("capidInput").value = "";
+    }
+
+    function logOut() {
+      localStorage.removeItem("CAPID");
+      ["inspectionFormSection","checklistSection","checklistSection2","checklistSection3","notesSection","attachVideosSection","mainMenu"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
+      showLoginScreen();
+    }
+
+ function showInspectedVans() {
+  // Hide all sections first
+  const sections = document.querySelectorAll('.section');
+  sections.forEach(section => section.classList.add('hidden'));
+  
+  // Show only the inspected vans section
+   document.getElementById('inspectedVansSection').classList.remove('hidden');
+ 
+  // Load events for filter dropdown
+  loadEventsForFilter();
+  
+  // Load inspections with current sorting/filtering
+  applySorting();
+}
+
+ function loadEventsForFilter() {
+   fetch('/events')
+     .then(response => response.json())
+     .then(events => {
+       const eventFilter = document.getElementById('eventFilter');
+       eventFilter.innerHTML = '<option value="">All Events</option>';
+       
+       if (events && events.length > 0) {
+         events.forEach(event => {
+           const option = document.createElement('option');
+           option.value = event.name;
+           option.textContent = event.name;
+           eventFilter.appendChild(option);
+         });
+       }
+     })
+     .catch(error => {
+       console.error('Error loading events for filter:', error);
+     });
+ }
+
+ function applySorting(page = 1) {
+   const sortBy = document.getElementById('sortSelect').value;
+   const eventFilter = document.getElementById('eventFilter').value;
+   const perPage = document.getElementById('perPageSelect').value;
+   
+   let url = '/inspected_vans?';
+   if (sortBy) url += `sort=${sortBy}&`;
+   if (eventFilter) url += `event=${encodeURIComponent(eventFilter)}&`;
+   url += `page=${page}&per_page=${perPage}`;
+   
+   fetch(url)
+     .then(response => response.json())
+     .then(data => {
+       const container = document.getElementById('inspectionsList');
+       
+       if (data.inspections.length === 0) {
+         container.innerHTML = '<div class="text-center" style="padding: 2rem; color: var(--text-secondary);">No inspections found.</div>';
+         updatePaginationInfo(data);
+         return;
+       }
+       
+       container.innerHTML = '';
+       data.inspections.forEach(inspection => {
+         const card = createInspectionCard(inspection);
+         container.appendChild(card);
+       });
+       
+       updatePaginationInfo(data);
+       updatePaginationButtons(data);
+     })
+     .catch(error => {
+       console.error('Error loading inspections:', error);
+       document.getElementById('inspectionsList').innerHTML = '<div class="text-center" style="padding: 2rem; color: var(--danger-color);">Error loading inspections.</div>';
+     });
+ }
+
+ function refreshInspectedVans() {
+   applySorting();
+ }
+
+ function changePerPage() {
+   applySorting(1); // Reset to first page when changing per page
+ }
+
+ function updatePaginationInfo(data) {
+   const info = document.getElementById('paginationInfo');
+   const start = ((data.page - 1) * data.per_page) + 1;
+   const end = Math.min(data.page * data.per_page, data.total);
+   info.textContent = `Showing ${start}-${end} of ${data.total} inspections`;
+ }
+
+ function updatePaginationButtons(data) {
+   const container = document.getElementById('paginationButtons');
+   container.innerHTML = '';
+   
+   const currentPage = data.page;
+   const totalPages = data.pages;
+   
+   // Previous button
+   const prevBtn = document.createElement('button');
+   prevBtn.className = 'btn btn-secondary';
+   prevBtn.textContent = '← Previous';
+   prevBtn.disabled = currentPage === 1;
+   prevBtn.onclick = () => applySorting(currentPage - 1);
+   container.appendChild(prevBtn);
+   
+   // Page numbers
+   const startPage = Math.max(1, currentPage - 2);
+   const endPage = Math.min(totalPages, currentPage + 2);
+   
+   for (let i = startPage; i <= endPage; i++) {
+     const pageBtn = document.createElement('button');
+     pageBtn.className = i === currentPage ? 'btn btn-primary' : 'btn btn-secondary';
+     pageBtn.textContent = i;
+     pageBtn.onclick = () => applySorting(i);
+     container.appendChild(pageBtn);
+   }
+   
+   // Next button
+   const nextBtn = document.createElement('button');
+   nextBtn.className = 'btn btn-secondary';
+   nextBtn.textContent = 'Next →';
+   nextBtn.disabled = currentPage === totalPages;
+   nextBtn.onclick = () => applySorting(currentPage + 1);
+   container.appendChild(nextBtn);
+ }
+
+ function createInspectionCard(inspection) {
+   const card = document.createElement('div');
+   card.className = 'inspection-card';
+   card.onclick = () => showInspectionDetails(inspection);
+   
+   // Count passed/failed items
+   const checklistFields = ['body','branding','tire_press','inspection','registration',
+                           'inspection_card','van_book','form_132','shell_card',
+                           'oil_level','antifreeze_level','power_steering','battery',
+                           'horn','backup_lights','backup_camera','backup_alarm',
+                           'head_lights','brake_lights','turn_signals','windshield',
+                           'hazard_lights'];
+   
+   let passedCount = 0;
+   let totalCount = 0;
+   checklistFields.forEach(field => {
+     if (inspection[field]) {
+       totalCount++;
+       if (inspection[field] === 'Yes') passedCount++;
+     }
+   });
+   
+   const passRate = totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : 0;
+   
+   // Create video thumbnail if available
+   let videoThumb = '';
+   if (inspection.video_filename) {
+     // Use converted video filename for thumbnail if available
+     const videoFile = inspection.converted_video_filename || inspection.video_filename;
+     const thumbnailName = videoFile.replace(/\.(mp4|avi|mov|wmv)$/i, '.jpg');
+     videoThumb = `
+       <div class="video-thumbnail-container" onclick="event.stopPropagation(); playVideo('${videoFile}')">
+         <img src="/thumbnail/${thumbnailName}" 
+              alt="Video thumbnail" 
+              class="video-thumbnail"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+         <div class="video-placeholder" style="display: none;">
+           <svg width="80" height="60" viewBox="0 0 80 60" style="cursor: pointer;">
+             <rect width="80" height="60" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1" rx="4"/>
+             <polygon points="25,15 25,45 55,30" fill="var(--primary-color)"/>
+             <text x="40" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#6c757d">Click to play</text>
+           </svg>
+         </div>
+       </div>`;
+   }
+   
+   card.innerHTML = `
+     <div class="inspection-header">
+       <div class="inspection-title">COV ${inspection.van_number}</div>
+       <div class="inspection-date">${inspection.date}</div>
+     </div>
+     
+     <div class="inspection-content">
+       <div class="inspection-main">
+         <div class="inspection-line">
+           <span class="inspection-label">Inspector:</span>
+           <span class="inspection-value">${inspection.inspector_id}</span>
+           <span class="inspection-label">License:</span>
+           <span class="inspection-value">${inspection.license_plate}</span>
+           <span class="inspection-label">Odometer:</span>
+           <span class="inspection-value">${inspection.odometer_in}</span>
+         </div>
+         <div class="inspection-line">
+           <span class="inspection-label">Event:</span>
+           <span class="inspection-value">${inspection.event_name || 'Not specified'}</span>
+           <span class="inspection-label">Pass Rate:</span>
+           <span class="inspection-value ${passRate >= 80 ? 'status-yes' : 'status-no'}">${passRate}%</span>
+         </div>
+         <div class="inspection-line">
+           <span class="inspection-label">Video:</span>
+           <span class="inspection-value ${inspection.video_filename ? 'status-yes' : 'status-no'}">
+             ${inspection.video_filename ? 'Available' : 'None'}
+           </span>
+         </div>
+       </div>
+       <div class="inspection-thumbnail">
+         ${videoThumb}
+       </div>
+     </div>
+     <div class="inspection-footer">
+       Click to view full details
+     </div>
+   `;
+   
+   return card;
+ }
+
+function showInspectionDetails(inspection) {
+  // Update modal title to include event name
+  const eventName = inspection.event_name ? ` - ${inspection.event_name}` : '';
+  document.getElementById('modalTitle').textContent = `Inspection Details - COV ${inspection.van_number}${eventName}`;
+  
+  // Create detailed inspection view
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = createInspectionDetailsHTML(inspection);
+  
+  // Check if event is locked and show appropriate button
+  const replaceBtn = document.getElementById('replaceVideoBtn');
+  if (!replaceBtn) {
+    console.error('Replace video button not found');
+    return;
+  }
+  
+  if (inspection.video_filename && inspection.event_name) {
+    // Check if event is locked
+    fetch(`/api/events/${encodeURIComponent(inspection.event_name)}/lock-status`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          if (data.is_locked) {
+            // Event is locked - show disabled "Event Locked" button
+            replaceBtn.textContent = 'Event Locked';
+            replaceBtn.className = 'btn btn-secondary';
+            replaceBtn.disabled = true;
+            replaceBtn.onclick = null;
+            replaceBtn.title = `Event "${inspection.event_name}" is locked by ${data.locked_by || 'admin'}`;
+          } else {
+            // Event is unlocked - show normal "Replace Video" button
+            replaceBtn.textContent = 'Replace Video';
+            replaceBtn.className = 'btn btn-warning';
+            replaceBtn.disabled = false;
+            replaceBtn.onclick = showReplaceVideoModal;
+            replaceBtn.title = 'Replace the inspection video';
+            replaceBtn.setAttribute('data-inspection-id', inspection._id);
+            replaceBtn.setAttribute('data-inspector-id', inspection.inspector_id);
+          }
+          replaceBtn.style.display = 'inline-block';
+        } else {
+          // Error checking lock status - default to showing replace button
+          replaceBtn.textContent = 'Replace Video';
+          replaceBtn.className = 'btn btn-warning';
+          replaceBtn.disabled = false;
+          replaceBtn.onclick = showReplaceVideoModal;
+          replaceBtn.title = 'Replace the inspection video';
+          replaceBtn.setAttribute('data-inspection-id', inspection._id);
+          replaceBtn.setAttribute('data-inspector-id', inspection.inspector_id);
+          replaceBtn.style.display = 'inline-block';
+        }
+      })
+      .catch(error => {
+        console.error('Error checking event lock status:', error);
+        // Default to showing replace button on error
+        replaceBtn.textContent = 'Replace Video';
+        replaceBtn.className = 'btn btn-warning';
+        replaceBtn.disabled = false;
+        replaceBtn.onclick = showReplaceVideoModal;
+        replaceBtn.title = 'Replace the inspection video';
+        replaceBtn.setAttribute('data-inspection-id', inspection._id);
+        replaceBtn.setAttribute('data-inspector-id', inspection.inspector_id);
+        replaceBtn.style.display = 'inline-block';
+      });
+  } else {
+    replaceBtn.style.display = 'none';
+  }
+  
+  document.getElementById('inspectionDetailModal').style.display = 'block';
+}
+
+function showReplaceVideoModal() {
+  const replaceBtn = document.getElementById('replaceVideoBtn');
+  const inspectionId = replaceBtn.getAttribute('data-inspection-id');
+  const inspectorId = replaceBtn.getAttribute('data-inspector-id');
+  
+  document.getElementById('replaceInspectionId').value = inspectionId;
+  document.getElementById('replaceInspectorId').value = inspectorId;
+  
+  document.getElementById('replaceVideoModal').style.display = 'block';
+}
+
+function closeReplaceVideoModal() {
+  document.getElementById('replaceVideoModal').style.display = 'none';
+  document.getElementById('replaceVideoFile').value = '';
+}
+
+function showNewEventConfirmation() {
+  document.getElementById('newEventModal').style.display = 'flex';
+  document.getElementById('newEventNameInput').focus();
+}
+
+function closeNewEventModal() {
+  document.getElementById('newEventModal').style.display = 'none';
+  document.getElementById('newEventNameInput').value = '';
+  // Reset the dropdown to show the event list again
+  document.getElementById('eventSelect').value = '';
+  // Make sure the dropdown is visible
+  document.getElementById('eventSelect').style.display = 'block';
+}
+
+// Global variables for similar events modal
+let pendingEventName = '';
+let similarEventsList = [];
+
+function createNewEvent() {
+  const eventName = document.getElementById('newEventNameInput').value.trim();
+  if (!eventName) {
+    alert('Please enter an event name.');
+    return;
+  }
+  
+  // Close modal
+  closeNewEventModal();
+  
+  // Create the event directly
+  const selectButton = document.getElementById('selectEventButton');
+  const buttonText = document.getElementById('selectEventButtonText');
+  
+  buttonText.textContent = 'Creating...';
+  selectButton.disabled = true;
+  
+  fetch('/events', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: eventName,
+      inspector_id: localStorage.getItem('CAPID')
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(data => {
+        throw { message: data.message, similar_events: data.similar_events };
+      });
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.status === 'success') {
+      proceedToMainMenu(data.event.name, true);
+    } else if (data.status === 'similar_events_found') {
+      // Show modal with similar events for user to choose
+      showSimilarEventsModal(eventName, data.similar_events);
+    } else {
+      throw new Error(data.message || 'Failed to create event');
+    }
+  })
+  .catch(error => {
+    console.error('Error creating event:', error);
+    
+    // Show more detailed error message if similar events were found
+    if (error.similar_events && error.similar_events.length > 0) {
+      const similarList = error.similar_events.map(e => `  • ${e}`).join('\n');
+      alert(`${error.message}\n\nSimilar events found:\n${similarList}\n\nIf you still want to create this event, please use a more unique name.`);
+    } else {
+      alert('Error creating event: ' + error.message);
+    }
+  })
+  .finally(() => {
+    buttonText.textContent = 'Continue';
+    selectButton.disabled = false;
+  });
+}
+
+function showSimilarEventsModal(eventName, similarEvents) {
+  pendingEventName = eventName;
+  similarEventsList = similarEvents;
+  
+  const similarEventsListDiv = document.getElementById('similarEventsList');
+  similarEventsListDiv.innerHTML = '';
+  
+  similarEvents.forEach(event => {
+    const eventName = event.name || event; // Handle both object and string formats
+    const similarityPercent = event.similarity ? Math.round(event.similarity * 100) : '';
+    
+    const eventDiv = document.createElement('div');
+    eventDiv.style.cssText = 'margin: 0.5rem 0; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary);';
+    eventDiv.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-weight: 600;">${eventName}</div>
+          ${similarityPercent ? `<div style="font-size: 0.9rem; color: var(--text-secondary);">${similarityPercent}% similar</div>` : ''}
+        </div>
+        <button class="btn btn-success" onclick="useExistingEvent('${eventName}')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+          Use This Event
+        </button>
+      </div>
+    `;
+    similarEventsListDiv.appendChild(eventDiv);
+  });
+  
+  document.getElementById('similarEventsModal').style.display = 'flex';
+}
+
+function closeSimilarEventsModal() {
+  document.getElementById('similarEventsModal').style.display = 'none';
+  pendingEventName = '';
+  similarEventsList = [];
+}
+
+function useExistingEvent(eventName) {
+  closeSimilarEventsModal();
+  proceedToMainMenu(eventName, true);
+}
+
+function createNewEventAnyway() {
+  closeSimilarEventsModal();
+  
+  // Create the event anyway
+  const selectButton = document.getElementById('selectEventButton');
+  const buttonText = document.getElementById('selectEventButtonText');
+  
+  buttonText.textContent = 'Creating...';
+  selectButton.disabled = true;
+  
+  fetch('/events', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: pendingEventName,
+      inspector_id: localStorage.getItem('CAPID'),
+      force_create: true // Flag to bypass similar event checks
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      proceedToMainMenu(data.event.name, true);
+    } else {
+      throw new Error(data.message || 'Failed to create event');
+    }
+  })
+  .catch(error => {
+    console.error('Error creating event:', error);
+    alert('Error creating event: ' + error.message);
+  })
+  .finally(() => {
+    buttonText.textContent = 'Continue';
+    selectButton.disabled = false;
+  });
+}
+
+function submitReplaceVideo() {
+  const inspectionId = document.getElementById('replaceInspectionId').value;
+  const inspectorId = document.getElementById('replaceInspectorId').value;
+  const videoFile = document.getElementById('replaceVideoFile').files[0];
+  
+  if (!videoFile) {
+    alert('Please select a video file');
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('inspection_id', inspectionId);
+  formData.append('inspector_id', inspectorId);
+  formData.append('inspection_video', videoFile);
+  
+  setLoading(true);
+  
+  fetch('/replace_video', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    setLoading(false);
+    if (data.status === 'success') {
+      alert('Video replaced successfully!');
+      closeReplaceVideoModal();
+      closeInspectionModal();
+      // Refresh the inspected vans list
+      showInspectedVans();
+    } else {
+      alert(`Error: ${data.message}`);
+    }
+  })
+  .catch(error => {
+    setLoading(false);
+    console.error('Error:', error);
+    alert('An error occurred while replacing the video');
+  });
+}
+
+ function createInspectionDetailsHTML(inspection) {
+   const checklistFields = {
+     'Vehicle Condition': ['body', 'branding', 'tire_press'],
+     'Documentation': ['inspection', 'registration', 'inspection_card', 'van_book', 'form_132', 'shell_card'],
+     'Engine & Fluids': ['oil_level', 'antifreeze_level', 'power_steering', 'battery'],
+     'Safety Features': ['horn', 'backup_lights', 'backup_camera', 'backup_alarm'],
+     'Lights & Signals': ['head_lights', 'brake_lights', 'turn_signals', 'hazard_lights'],
+     'Windshield': ['windshield']
+   };
+   
+   let checklistHTML = '';
+   Object.entries(checklistFields).forEach(([category, fields]) => {
+     checklistHTML += `
+       <div class="detail-section">
+         <h4>${category}</h4>
+         ${fields.map(field => `
+           <div class="detail-item">
+             <span class="inspection-label">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+             <span class="inspection-value ${inspection[field] === 'Yes' ? 'status-yes' : 'status-no'}">
+               ${inspection[field] || 'No'}
+             </span>
+           </div>
+         `).join('')}
+       </div>
+     `;
+   });
+   
+   let videoHTML = '';
+   if (inspection.video_filename) {
+     // Use converted video filename if available, otherwise use original
+     const videoFile = inspection.converted_video_filename || inspection.video_filename;
+     const videoType = 'video/mp4'; // Converted videos are always MP4
+     
+     videoHTML = `
+       <div class="video-section">
+         <h4>Inspection Video</h4>
+         <video controls class="video-player" preload="metadata">
+           <source src="/video/${videoFile}" type="${videoType}">
+           Your browser does not support the video tag.
+         </video>
+         <p style="margin-top: 0.5rem; color: var(--text-secondary);">
+           Video: ${inspection.video_filename}${inspection.converted_video_filename ? ' (converted to MP4)' : ''}
+         </p>
+         <p style="margin-top: 0.25rem; color: var(--text-muted); font-size: 0.9rem;">
+           Click the play button above to view the inspection walk-around video
+         </p>
+       </div>
+     `;
+   }
+   
+   return `
+     <div class="detail-grid">
+       <div class="detail-section">
+         <h4>Basic Information</h4>
+         <div class="detail-item">
+           <span class="inspection-label">Date:</span>
+           <span class="inspection-value">${inspection.date}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Inspector:</span>
+           <span class="inspection-value">${inspection.inspector_id}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">COV Number:</span>
+           <span class="inspection-value">${inspection.van_number}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">License Plate:</span>
+           <span class="inspection-value">${inspection.license_plate}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Odometer:</span>
+           <span class="inspection-value">${inspection.odometer_in}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Inspection Sticker:</span>
+           <span class="inspection-value">${inspection.inspection_sticker || 'Not recorded'}</span>
+         </div>
+       </div>
+       
+       <div class="detail-section">
+         <h4>Arrival Fluid Levels</h4>
+         <div class="detail-item">
+           <span class="inspection-label">Fuel Level:</span>
+           <span class="inspection-value">${inspection.arrival_fuel_level || 'Not Entered'}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Oil Level:</span>
+           <span class="inspection-value">${inspection.arrival_oil_level || 'Not Entered'}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Wiper Fluid:</span>
+           <span class="inspection-value">${inspection.arrival_wiper_fluid_level || 'Not Entered'}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Power Steering:</span>
+           <span class="inspection-value">${inspection.arrival_power_steering_level || 'Not Entered'}</span>
+         </div>
+       </div>
+       
+       <div class="detail-section">
+         <h4>Fluids Added</h4>
+         <div class="detail-item">
+           <span class="inspection-label">Engine Oil:</span>
+           <span class="inspection-value">${inspection.engine_oil || 'None'}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Transmission Fluid:</span>
+           <span class="inspection-value">${inspection.transmission_fluid || 'None'}</span>
+         </div>
+         <div class="detail-item">
+           <span class="inspection-label">Wiper Fluid:</span>
+           <span class="inspection-value">${inspection.wiper_fluid || 'None'}</span>
+         </div>
+       </div>
+     </div>
+     
+     <div class="detail-grid">
+       ${checklistHTML}
+     </div>
+     
+     ${inspection.comments ? `
+       <div class="detail-section">
+         <h4>Comments</h4>
+         <p style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; border: 1px solid var(--border-color);">
+           ${inspection.comments}
+         </p>
+       </div>
+     ` : ''}
+     
+     ${videoHTML}
+   `;
+ }
+
+ function closeInspectionModal() {
+   document.getElementById('inspectionDetailModal').style.display = 'none';
+ }
+
+function playVideo(filename) {
+  // Check if it's a .mov file and warn user about potential playback issues on mobile
+  if (filename.toLowerCase().endsWith('.mov')) {
+    // Try to open the video
+    const videoWindow = window.open(`/video/${filename}`, '_blank');
+    
+    // Check if the window failed to open (common on mobile with unsupported formats)
+    if (!videoWindow || videoWindow.closed || typeof videoWindow.closed == 'undefined') {
+      alert('Video playback may not be supported on this device. .mov files have limited support on mobile devices. Try downloading the file instead.');
+    }
+  } else {
+    // .mp4 files should work better on mobile
+    window.open(`/video/${filename}`, '_blank');
+  }
+}
+
+ // Close modal when clicking outside of it
+ window.onclick = function(event) {
+   const modal = document.getElementById('inspectionDetailModal');
+   if (event.target === modal) {
+     closeInspectionModal();
+   }
+ }
+
+/**
+ * Sort the Inspected Vans table by column.
+ * @param {number} colIndex – zero-based column index
+ * @param {'date'|'number'|'string'} type – comparison mode
+ */
+function sortTable(colIndex, type) {
+  const table = document.getElementById('inspectedVansTable');
+  const tbody = table.tBodies[0];
+  const rows = Array.from(tbody.rows);
+
+  // toggle asc/desc when you click the same column twice
+  const prevCol   = table.getAttribute('data-sort-col');
+  const prevOrder = table.getAttribute('data-sort-order');
+  const order = (prevCol == colIndex && prevOrder == 'asc') ? 'desc' : 'asc';
+
+  rows.sort((a, b) => {
+    let va = a.cells[colIndex].textContent.trim();
+    let vb = b.cells[colIndex].textContent.trim();
+    if (type === 'date') {
+      va = new Date(va);
+      vb = new Date(vb);
+    } else if (type === 'number') {
+      va = parseFloat(va) || 0;
+      vb = parseFloat(vb) || 0;
+    } else {
+      va = va.toLowerCase();
+      vb = vb.toLowerCase();
+    }
+    if (va < vb) return order === 'asc' ? -1 : 1;
+    if (va > vb) return order === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // re-render
+  tbody.innerHTML = '';
+  rows.forEach(r => tbody.appendChild(r));
+
+  // remember state for next click
+  table.setAttribute('data-sort-col', colIndex);
+  table.setAttribute('data-sort-order', order);
+}
+
+// Return to the main menu
+function backToMainMenu() {
+  // Hide all sections first
+  const sections = document.querySelectorAll('.section');
+  sections.forEach(section => section.classList.add('hidden'));
+  
+  // Show only the main menu
+  document.getElementById('mainMenu').classList.remove('hidden');
+  updateMassModeIndicator();
+}
+
+    function startInspection() {
+      // Set flag to track that we came from New Inspection
+      localStorage.setItem('eventSelectionSource', 'newInspection');
+      document.getElementById("mainMenu").classList.add("hidden");
+      document.getElementById("eventSelectionSection").classList.remove("hidden");
+      loadEvents();
+    }
+
+    // Navigation functions
+    function goToStep(step) {
+      const sections = [
+        'loginSection', 'inspectionFormSection', 'arrivalFluidsSection', 
+        'checklistSection', 'checklistSection2', 'checklistSection3', 'notesSection'
+      ];
+      
+      sections.forEach(section => {
+        document.getElementById(section).classList.add('hidden');
+      });
+      
+      if (step === 1) {
+        showLoginScreen();
+      } else if (step >= 2 && step <= 7) {
+        document.getElementById(sections[step - 1]).classList.remove('hidden');
+        updateProgress(step - 1);
+        updateBreadcrumb(step - 1);
+      }
+    }
+
+    function backToMainMenuFromInspection() {
+      // Hide inspection form and show main menu
+      document.getElementById('inspectionFormSection').classList.add('hidden');
+      document.getElementById('mainMenu').classList.remove('hidden');
+      updateMassModeIndicator();
+      
+      // Clear any draft data
+      localStorage.removeItem('inspectionDraft');
+      
+      // Clear form fields for next inspection
+      resetInspectionForm();
+    }
+
+    function continueToArrivalFluids() {
+      document.getElementById('inspectionFormSection').classList.add('hidden');
+      document.getElementById('arrivalFluidsSection').classList.remove('hidden');
+      updateProgress(2);
+      updateBreadcrumb(2);
+      autoSave();
+    }
+
+    function backToInspectionForm() {
+      document.getElementById('arrivalFluidsSection').classList.add('hidden');
+      document.getElementById('inspectionFormSection').classList.remove('hidden');
+      updateProgress(1);
+      updateBreadcrumb(1);
+    }
+
+    function continueToChecklist() {
+      document.getElementById('arrivalFluidsSection').classList.add('hidden');
+      document.getElementById('checklistSection').classList.remove('hidden');
+      updateProgress(3);
+      updateBreadcrumb(3);
+      autoSave();
+    }
+
+    function continueToChecklist2() {
+      document.getElementById('checklistSection').classList.add('hidden');
+      document.getElementById('checklistSection2').classList.remove('hidden');
+      updateProgress(4);
+      updateBreadcrumb(4);
+      autoSave();
+    }
+
+    function continueToChecklist3() {
+      document.getElementById('checklistSection2').classList.add('hidden');
+      document.getElementById('checklistSection3').classList.remove('hidden');
+      updateProgress(5);
+      updateBreadcrumb(5);
+      autoSave();
+    }
+
+    function continueToNotes() {
+      document.getElementById('checklistSection3').classList.add('hidden');
+      document.getElementById('notesSection').classList.remove('hidden');
+      updateProgress(6);
+      updateBreadcrumb(6);
+      autoSave();
+    }
+
+    function backToChecklist() {
+      document.getElementById('checklistSection2').classList.add('hidden');
+      document.getElementById('checklistSection').classList.remove('hidden');
+      updateProgress(3);
+      updateBreadcrumb(3);
+    }
+
+    function backToChecklist2() {
+      document.getElementById('checklistSection3').classList.add('hidden');
+      document.getElementById('checklistSection2').classList.remove('hidden');
+      updateProgress(4);
+      updateBreadcrumb(4);
+    }
+
+    function backToChecklist3() {
+      document.getElementById('notesSection').classList.add('hidden');
+      document.getElementById('checklistSection3').classList.remove('hidden');
+      updateProgress(5);
+      updateBreadcrumb(5);
+    }
+
+    function openAttachVideos() {
+      // First check if there are any missing videos
+      fetch('/missing_videos')
+        .then(response => response.json())
+        .then(missingVideos => {
+          if (missingVideos.length === 0) {
+            // No missing videos - show message
+      document.getElementById("mainMenu").classList.add("hidden");
+      document.getElementById("attachVideosSection").classList.remove("hidden");
+            
+            // Show message that all videos are attached
+            const missingList = document.getElementById('missingList');
+            const attachForm = document.getElementById('attachForm');
+            
+            if (missingList) {
+              missingList.innerHTML = `
+                <div class="no-missing-videos">
+                  <h3>✅ All inspections have videos attached!</h3>
+                  <p>There are no inspections that need video attachments.</p>
+                </div>
+              `;
+            }
+            
+            if (attachForm) {
+              attachForm.classList.add('hidden');
+            }
+          } else {
+            // There are missing videos - proceed with event selection
+            document.getElementById("mainMenu").classList.add("hidden");
+            document.getElementById("eventSelectionAttachSection").classList.remove("hidden");
+            loadEventsForAttach();
+          }
+        })
+        .catch(error => {
+          console.error('Error checking missing videos:', error);
+          // On error, proceed with normal flow
+          document.getElementById("mainMenu").classList.add("hidden");
+          document.getElementById("eventSelectionAttachSection").classList.remove("hidden");
+          loadEventsForAttach();
+        });
+    }
+
+    function backToMenu() {
+      document.getElementById("attachVideosSection").classList.add("hidden");
+      document.getElementById("mainMenu").classList.remove("hidden");
+      updateMassModeIndicator();
+    }
+
+    function backToMainMenuFromEventAttach() {
+      // Hide all sections first
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(section => section.classList.add('hidden'));
+      
+      // Show only the main menu
+      document.getElementById("mainMenu").classList.remove("hidden");
+      updateMassModeIndicator();
+    }
+
+    function loadMissingVideos() {
+      fetch('/missing_videos')
+        .then(r => r.json())
+        .then(data => {
+          let div = document.getElementById('missingList');
+          div.innerHTML = '';
+          if (!data.length) {
+            div.innerHTML = `
+              <div class="no-missing-videos">
+                <h3>✅ All inspections have videos attached!</h3>
+                <p>There are no inspections that need video attachments.</p>
+              </div>
+            `;
+            return;
+          }
+          
+          let ul = document.createElement('ul');
+          ul.className = 'missing-videos-list';
+          
+          data.forEach(item => {
+            let li = document.createElement('li');
+            li.className = 'missing-video-item';
+            li.onclick = () => startAttach(item);
+            
+            let infoDiv = document.createElement('div');
+            infoDiv.className = 'missing-video-info';
+            
+            let vanDiv = document.createElement('div');
+            vanDiv.className = 'missing-video-van';
+            vanDiv.textContent = `Van #${item.van_number}`;
+            
+            let inspectorDiv = document.createElement('div');
+            inspectorDiv.className = 'missing-video-inspector';
+            inspectorDiv.textContent = `Inspector: ${item.inspector_id}`;
+            
+            infoDiv.appendChild(vanDiv);
+            infoDiv.appendChild(inspectorDiv);
+            
+            let btn = document.createElement('div');
+            btn.className = 'missing-video-attach-btn';
+            btn.textContent = 'Attach Video';
+            
+            li.appendChild(infoDiv);
+            li.appendChild(btn);
+            ul.appendChild(li);
+          });
+          div.appendChild(ul);
+        })
+        .catch(console.error);
+    }
+
+    function startAttach(item) {
+      document.getElementById('missingList').classList.add('hidden');
+      document.getElementById('attachForm').classList.remove('hidden');
+      document.getElementById('attach_inspection_video').value = '';
+      document.getElementById('attach_van_display').textContent = item.van_number;
+      document.getElementById('attach_inspector_display').textContent = item.inspector_id;
+      document.getElementById('attach_van_number').value = item.van_number;
+      document.getElementById('attach_inspector_id').value = item.inspector_id;
+    }
+
+    function cancelAttach() {
+      document.getElementById('attachForm').classList.add('hidden');
+      document.getElementById('missingList').classList.remove('hidden');
+      document.getElementById('attach_inspection_video').value = '';
+    }
+
+    function submitAttach() {
+      let btn = document.getElementById('attachSubmitButton');
+      let btnText = document.getElementById('attachSubmitButtonText');
+      setLoading(btn, true);
+      btnText.textContent = "Uploading...";
+      
+      let vid = document.getElementById('attach_inspection_video').files[0];
+      if (!vid) { 
+        alert("Select a video."); 
+        setLoading(btn, false);
+        btnText.textContent = "Submit Video";
+        return; 
+      }
+      let fd = new FormData();
+      let van = document.getElementById('attach_van_number').value;
+      let insp = document.getElementById('attach_inspector_id').value;
+      let ext = vid.name.split('.').pop();
+      fd.append('inspection_video', vid, `${van}_INSPECTION_VIDEO.${ext}`);
+      fd.append('van_number', van);
+      fd.append('inspector_id', insp);
+      fetch('/attach_video',{ method:'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'success') {
+            alert("Video attached.");
+            cancelAttach();
+            loadMissingVideos();
+          } else {
+            alert("Error: "+(data.message||"failed"));
+          }
+        })
+        .catch(e => { console.error(e); alert("Error attaching."); })
+        .finally(() => {
+          setLoading(btn, false);
+          btnText.textContent = "Submit Video";
+        });
+    }
+
+
+    function updateFuelLevel(val) {
+      document.getElementById('fuel_level_input').value = val;
+    }
+    function updateFuelSlider(val) {
+      let v = Math.max(0, Math.min(8, val));
+      document.getElementById('fuel_level_slider').value = v;
+      document.getElementById('fuel_level_input').value = v;
+    }
+
+    function continueToChecklist() {
+      document.getElementById("inspectionFormSection").classList.add("hidden");
+      document.getElementById("checklistSection").classList.remove("hidden");
+    }
+    function continueToChecklist2() {
+      document.getElementById("checklistSection").classList.add("hidden");
+      document.getElementById("checklistSection2").classList.remove("hidden");
+    }
+    function continueToChecklist3() {
+      document.getElementById("checklistSection2").classList.add("hidden");
+      document.getElementById("checklistSection3").classList.remove("hidden");
+    }
+    function continueToNotes() {
+      document.getElementById("checklistSection3").classList.add("hidden");
+      document.getElementById("notesSection").classList.remove("hidden");
+    }
+
+  function continueToArrivalFluids() {
+    document.getElementById('inspectionFormSection').classList.add('hidden');
+    document.getElementById('arrivalFluidsSection').classList.remove('hidden');
+  }
+  function backToInspectionForm() {
+    document.getElementById('arrivalFluidsSection').classList.add('hidden');
+    document.getElementById('inspectionFormSection').classList.remove('hidden');
+  }
+  function continueToChecklist() {
+    document.getElementById('inspectionFormSection').classList.add('hidden');
+    document.getElementById('arrivalFluidsSection').classList.add('hidden');
+    document.getElementById('checklistSection').classList.remove('hidden');
+  }
+
+  // Slider ↔ number sync
+  function updateOilLevel(v) {
+    document.getElementById('arrival_oil_input').value = v;
+  }
+  function updateOilSlider(v) {
+    let x = Math.max(0, Math.min(4, v));
+    document.getElementById('arrival_oil_slider').value = x;
+    document.getElementById('arrival_oil_input').value = x;
+  }
+  function updateWiperFluidLevel(v) {
+    document.getElementById('arrival_wiper_fluid_input').value = v;
+  }
+  function updateWiperFluidSlider(v) {
+    let x = Math.max(0, Math.min(4, v));
+    document.getElementById('arrival_wiper_fluid_slider').value = x;
+    document.getElementById('arrival_wiper_fluid_input').value = x;
+  }
+  function updatePowerSteeringLevel(v) {
+    document.getElementById('arrival_power_steering_input').value = v;
+  }
+  function updatePowerSteeringSlider(v) {
+    let x = Math.max(0, Math.min(4, v));
+    document.getElementById('arrival_power_steering_slider').value = x;
+    document.getElementById('arrival_power_steering_input').value = x;
+  }
+
+// Go from Checklist Part 1 back to Arrival Fluids
+function backToArrivalFluids() {
+  document.getElementById('checklistSection').classList.add('hidden');
+  document.getElementById('arrivalFluidsSection').classList.remove('hidden');
+}
+
+// Go from Checklist Part 2 back to Checklist Part 1
+function backToChecklist() {
+  document.getElementById('checklistSection2').classList.add('hidden');
+  document.getElementById('checklistSection').classList.remove('hidden');
+}
+
+// Go from Checklist Part 3 back to Checklist Part 2
+function backToChecklist2() {
+  document.getElementById('checklistSection3').classList.add('hidden');
+  document.getElementById('checklistSection2').classList.remove('hidden');
+}
+
+// Go from Notes back to Checklist Part 3
+function backToChecklist3() {
+  document.getElementById('notesSection').classList.add('hidden');
+  document.getElementById('checklistSection3').classList.remove('hidden');
+}
+
+
+    function submitInspection() {
+      let submitButton = document.getElementById('submitButton');
+      let submitButtonText = document.getElementById('submitButtonText');
+      let formData = new FormData();
+      let inspectionVideo = document.getElementById('inspection_video').files[0];
+
+      setLoading(submitButton, true);
+      submitButtonText.textContent = "Submitting...";
+
+      // Video upload is optional - no confirmation needed
+      if (inspectionVideo) {
+        // Submit with video in background
+        submitWithVideo(formData, inspectionVideo, submitButton, submitButtonText);
+      } else {
+        // Submit without video
+        submitWithoutVideo(formData, submitButton, submitButtonText);
+      }
+    }
+
+    function submitWithVideo(formData, inspectionVideo, submitButton, submitButtonText) {
+      const vanNumber = document.getElementById("van_number").value;
+        const fileName = `${vanNumber}_INSPECTION_VIDEO.${inspectionVideo.name.split('.').pop()}`;
+        formData.append('inspection_video', inspectionVideo, fileName);
+      
+      // Add all form data
+      addFormDataToFormData(formData);
+      
+      // Submit inspection first
+      submitInspectionData(formData, submitButton, submitButtonText, true);
+    }
+
+    function submitWithoutVideo(formData, submitButton, submitButtonText) {
+      // Add all form data except video
+      addFormDataToFormData(formData);
+      
+      // Submit inspection
+      submitInspectionData(formData, submitButton, submitButtonText, false);
+    }
+
+    function addFormDataToFormData(formData) {
+      // Page 1 fields
+      formData.append('date', document.getElementById('dateField').value);
+      formData.append('inspector_id', document.getElementById('inspector_id').value);
+      formData.append('van_number', document.getElementById('van_number').value);
+      formData.append('license_plate', document.getElementById('license_plate').value);
+      formData.append('odometer_in', document.getElementById('odometer_in').value);
+      formData.append('inspection_sticker', document.getElementById('inspection_sticker').value || '');
+      formData.append('event_name', document.getElementById('event_name').value || '');
+      formData.append('vin_display_hidden', document.getElementById('vin_display_hidden').value || '');
+      formData.append('vin_confirmed', document.getElementById('vin_confirmed').value || '');
+      formData.append('arrival_fuel_level', document.getElementById('fuel_level_input').value || '0');
+      formData.append('arrival_oil_level', document.getElementById('arrival_oil_input').value || '0');
+      formData.append('arrival_wiper_fluid_level', document.getElementById('arrival_wiper_fluid_input').value || '0');
+      formData.append('arrival_power_steering_level', document.getElementById('arrival_power_steering_input').value || '0');
+
+      // Checklist radios
+      [
+        'body','branding','tire_press','inspection','registration',
+        'inspection_card','van_book','form_132','shell_card',
+        'oil_level','antifreeze_level','power_steering','battery',
+        'horn','backup_lights','backup_camera','backup_alarm',
+        'head_lights','brake_lights','turn_signals','windshield',
+        'hazard_lights'
+      ].forEach(name => {
+        let sel = document.querySelector(`input[name="${name}"]:checked`);
+        formData.append(name, sel ? sel.value : 'No');
+      });
+
+      // Fluids & comments
+      formData.append('engine_oil', document.querySelector('input[name="engine_oil"]').value || '');
+      formData.append('transmission_fluid', document.querySelector('input[name="transmission_fluid"]').value || '');
+      formData.append('wiper_fluid', document.querySelector('input[name="wiper_fluid"]').value || '');
+      formData.append('comments', document.querySelector('textarea[name="comments"]').value || '');
+
+      // Tire date codes
+      formData.append('tire_fl', document.getElementById('tire_fl').value || '');
+      formData.append('tire_fr', document.getElementById('tire_fr').value || '');
+      formData.append('tire_rl', document.getElementById('tire_rl').value || '');
+      formData.append('tire_rr', document.getElementById('tire_rr').value || '');
+      formData.append('tire_spare', document.getElementById('tire_spare').value || '');
+    }
+
+    function submitInspectionData(formData, submitButton, submitButtonText, hasVideo) {
+      fetch('/upload', { method:'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === "success") {
+          // Show success message
+          showSuccessMessage("Inspection successfully submitted!");
+          
+          // Reset form
+          resetInspectionForm();
+          
+          // If video was included, show background upload status
+          if (hasVideo) {
+            showBackgroundUploadStatus();
+          }
+          
+          // Check if mass inspection mode is enabled
+          const massInspectionMode = localStorage.getItem('massInspectionMode') === 'true';
+          
+          // Return to appropriate screen after success popup disappears (2.5 seconds)
+          setTimeout(() => {
+            if (massInspectionMode) {
+              // Mass inspection mode: return to Step 1 of 6 for next COV
+              document.getElementById("inspectionFormSection").classList.remove("hidden");
+              document.getElementById("mainMenu").classList.add("hidden");
+              document.getElementById("notesSection").classList.add("hidden");
+              updateProgress(1);
+              updateBreadcrumb(1);
+              updateMassModeIndicator(); // Show mass mode indicator
+              
+              // Clear form for next inspection
+              resetInspectionForm();
+              
+              // Re-populate event name for mass mode
+              const eventField = document.getElementById("event_name");
+              const selectedEvent = localStorage.getItem('selectedEvent');
+              if (eventField && selectedEvent) {
+                eventField.value = selectedEvent;
+              }
+              
+              // Show a brief message that we're ready for the next COV
+              setTimeout(() => {
+                showSuccessMessage("Ready for next COV inspection!");
+              }, 500);
+            } else {
+              // Normal mode: return to main menu
+              document.getElementById("mainMenu").classList.remove("hidden");
+              document.getElementById("notesSection").classList.add("hidden");
+              updateProgress(1);
+              updateBreadcrumb(1);
+              updateMassModeIndicator();
+            }
+          }, 2500); // 2.5 seconds to ensure popup is gone
+          
+        } else {
+          showErrorMessage("Error submitting inspection. Please try again.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showErrorMessage("An error occurred. Please try again.");
+      })
+      .finally(() => {
+        setLoading(submitButton, false);
+        submitButtonText.textContent = "Submit Inspection";
+      });
+    }
+
+    // Helper functions for form management
+    function showSuccessMessage(message) {
+      // Create a modal-style success message similar to tire age warning
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+          <div class="modal-header">
+            <h3>✅ Success</h3>
+          </div>
+          <div class="modal-body">
+            <p style="margin-bottom: 1rem; text-align: center; font-size: 1.1rem;">${message}</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // Remove after 2 seconds
+      setTimeout(() => {
+        if (modal.parentNode) {
+          modal.remove();
+        }
+      }, 2000);
+    }
+
+    function showErrorMessage(message) {
+      // Create a temporary error message
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-danger';
+      alertDiv.textContent = message;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.left = '50%';
+      alertDiv.style.transform = 'translateX(-50%)';
+      alertDiv.style.zIndex = '9999';
+      alertDiv.style.minWidth = '300px';
+      alertDiv.style.textAlign = 'center';
+      
+      document.body.appendChild(alertDiv);
+      
+      // Remove after 5 seconds
+      setTimeout(() => {
+        if (alertDiv.parentNode) {
+          alertDiv.parentNode.removeChild(alertDiv);
+        }
+      }, 5000);
+    }
+
+    function showBackgroundUploadStatus() {
+      // Show a subtle notification that video is uploading in background
+      const statusDiv = document.createElement('div');
+      statusDiv.className = 'alert alert-info';
+      statusDiv.innerHTML = 'Video uploading in background - you can continue with next inspection';
+      statusDiv.style.position = 'fixed';
+      statusDiv.style.bottom = '20px';
+      statusDiv.style.right = '20px';
+      statusDiv.style.zIndex = '9999';
+      statusDiv.style.maxWidth = '300px';
+      
+      document.body.appendChild(statusDiv);
+      
+      // Remove after 5 seconds
+      setTimeout(() => {
+        if (statusDiv.parentNode) {
+          statusDiv.parentNode.removeChild(statusDiv);
+        }
+      }, 5000);
+    }
+
+    function resetInspectionForm() {
+          // Reset Page 1
+          document.getElementById("inspectionForm").reset();
+          document.getElementById('inspection_video').value = "";
+          document.getElementById("van_status").innerHTML = "";
+          document.getElementById("van_status").className = "status-indicator hidden";
+          document.getElementById("van_number").value = "";
+
+      // Reset VIN fields and state
+          document.getElementById('vin_display_hidden').value = '';
+          document.getElementById('vin_confirmed').value = '';
+          vinConfirmed = null;
+          document.getElementById('vin_group').style.display = 'none';
+          
+          // Remove any existing VIN confirmation message
+          const confirmationMsg = document.getElementById('vin_confirmation_message');
+          if (confirmationMsg) {
+            confirmationMsg.remove();
+          }
+          
+          // Reset VIN buttons state
+          const correctBtn = document.getElementById('vin_correct');
+          const incorrectBtn = document.getElementById('vin_incorrect');
+          if (correctBtn && incorrectBtn) {
+            correctBtn.style.display = 'inline-block';
+            incorrectBtn.style.display = 'inline-block';
+            correctBtn.disabled = false;
+            incorrectBtn.disabled = false;
+          }
+
+      // Reset Arrival Fluid Levels
+          document.getElementById('fuel_level_slider').value = 0;
+          document.getElementById('fuel_level_input').value = "";
+		  document.getElementById('arrival_oil_slider').value = 0;
+		  document.getElementById('arrival_oil_input').value = '';
+		  document.getElementById('arrival_wiper_fluid_slider').value = 0;
+		  document.getElementById('arrival_wiper_fluid_input').value = '';
+		  document.getElementById('arrival_power_steering_slider').value = 0;
+		  document.getElementById('arrival_power_steering_input').value = '';
+
+      // Reset Checklists to "No"
+          [
+            'body','branding','tire_press','inspection','registration',
+            'inspection_card','van_book','form_132','shell_card',
+            'oil_level','antifreeze_level','power_steering','battery',
+            'horn','backup_lights','backup_camera','backup_alarm',
+            'head_lights','brake_lights','turn_signals','windshield',
+            'hazard_lights'
+          ].forEach(name => {
+        const noRadio = document.querySelector(`input[name="${name}"][value="No"]`);
+        if (noRadio) {
+          noRadio.checked = true;
+          selectRadio(name, 'No');
+        }
+          });
+
+          // Clear fluids & comments
+          document.querySelector('input[name="engine_oil"]').value = "";
+          document.querySelector('input[name="transmission_fluid"]').value = "";
+          document.querySelector('input[name="wiper_fluid"]').value = "";
+          document.querySelector('textarea[name="comments"]').value = "";
+
+          // Refresh date & inspector
+          document.getElementById('dateField').value = getCurrentNYTime();
+          document.getElementById('inspector_id').value = localStorage.getItem('CAPID');
+    }
+
+    // Initialize radio button states
+    function initializeRadioButtons() {
+      document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        let saved = localStorage.getItem(radio.name);
+        if (saved === radio.value) {
+          radio.checked = true;
+          radio.closest('.radio-item').classList.add('selected');
+        }
+        
+      radio.addEventListener('change', function() {
+        localStorage.setItem(radio.name, radio.value);
+          // Update visual state
+          document.querySelectorAll(`input[name="${radio.name}"]`).forEach(r => {
+            r.closest('.radio-item').classList.remove('selected');
+          });
+          radio.closest('.radio-item').classList.add('selected');
+        });
+      });
+    }
+
+    // Initialize auto-save on form changes
+    function initializeAutoSave() {
+      const form = document.getElementById('inspectionForm');
+      if (form) {
+        form.addEventListener('input', autoSave);
+        form.addEventListener('change', autoSave);
+      }
+    }
+
+    // Swipe gesture support for touch devices
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let touchStartTime = 0;
+    
+    function handleSwipe() {
+      // Only handle swipes if we're on an inspection step (not on main menu, inspected vans, etc.)
+      const inspectionForm = document.getElementById('inspectionFormSection');
+      const isOnInspectionForm = inspectionForm && !inspectionForm.classList.contains('hidden');
+      
+      if (!isOnInspectionForm) {
+        return; // Don't handle swipes on other pages
+      }
+      
+      const touchEndTime = Date.now();
+      const touchDuration = touchEndTime - touchStartTime;
+      
+      // Only handle quick swipes (not long scrolls)
+      if (touchDuration > 500) {
+        return; // Too long, probably a scroll
+      }
+      
+      const swipeThreshold = 100; // Increased threshold to avoid accidental triggers
+      const swipeDistance = touchEndX - touchStartX;
+      
+      if (Math.abs(swipeDistance) > swipeThreshold) {
+        if (swipeDistance > 0) {
+          // Swipe right - go back
+          handleSwipeBack();
+        } else {
+          // Swipe left - go forward
+          handleSwipeForward();
+        }
+      }
+    }
+    
+    function handleSwipeBack() {
+      if (currentStep > 1) {
+        goToStep(currentStep - 1);
+      }
+    }
+    
+    function handleSwipeForward() {
+      if (currentStep < totalSteps) {
+        goToStep(currentStep + 1);
+      }
+    }
+    
+    // Add touch event listeners
+    document.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartTime = Date.now();
+    });
+    
+    document.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    });
+    
+    // Keyboard navigation - only when not typing in form fields
+    document.addEventListener('keydown', function(e) {
+      // ignore arrow keys when user is typing in input fields, textareas, or contenteditable elements
+      const activeElement = document.activeElement;
+      const isTyping = activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' || 
+        activeElement.contentEditable === 'true' ||
+        activeElement.isContentEditable
+      );
+      
+      if (isTyping) return; // let the form field handle the key
+      
+      if (e.key === 'ArrowLeft' && currentStep > 1) {
+        goToStep(currentStep - 1);
+      } else if (e.key === 'ArrowRight' && currentStep < totalSteps) {
+        goToStep(currentStep + 1);
+      } else if (e.key === 'Escape') {
+        if (currentStep > 1) {
+          goToStep(1); // Go back to main menu
+        }
+      }
+    });
+    
+    // Smart form validation
+    function validateForm() {
+      const requiredFields = ['van_number', 'license_plate', 'odometer_in'];
+      let isValid = true;
+      
+      requiredFields.forEach(fieldName => {
+        const field = document.getElementById(fieldName);
+        if (field && !field.value.trim()) {
+          field.classList.add('form-control:invalid');
+          isValid = false;
+        } else if (field) {
+          field.classList.remove('form-control:invalid');
+        }
+      });
+      
+      return isValid;
+    }
+    
+    // Add form validation on input
+    function initializeFormValidation() {
+      const form = document.getElementById('inspectionForm');
+      if (form) {
+        form.addEventListener('input', function(e) {
+          if (e.target.classList.contains('form-control')) {
+            if (e.target.value.trim()) {
+              e.target.classList.remove('form-control:invalid');
+            }
+          }
+        });
+      }
+    }
+    
+    // VIN handling
+    let vinConfirmed = null;
+
+        function handleVINConfirmation(isCorrect) {
+            console.log('handleVINConfirmation called with:', isCorrect);
+            vinConfirmed = isCorrect;
+            // Update hidden field
+            document.getElementById('vin_confirmed').value = isCorrect ? 'true' : 'false';
+            console.log('VIN confirmed value set to:', document.getElementById('vin_confirmed').value);
+        
+        // Get button elements
+        const correctBtn = document.getElementById('vin_correct');
+        const incorrectBtn = document.getElementById('vin_incorrect');
+        
+        // Disable both buttons to prevent multiple clicks
+        correctBtn.disabled = true;
+        incorrectBtn.disabled = true;
+        
+        // Hide both buttons and show confirmation message
+        correctBtn.style.display = 'none';
+        incorrectBtn.style.display = 'none';
+        
+        // Create confirmation message
+        const confirmationDiv = document.createElement('div');
+        confirmationDiv.id = 'vin_confirmation_message';
+        confirmationDiv.style.cssText = `
+            background-color: ${isCorrect ? '#d4edda' : '#f8d7da'};
+            color: ${isCorrect ? '#155724' : '#721c24'};
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            border: 1px solid ${isCorrect ? '#c3e6cb' : '#f5c6cb'};
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+        confirmationDiv.innerHTML = `
+            <span>${isCorrect ? '✓' : '✗'}</span>
+            <span>Response Captured: ${isCorrect ? 'Confirmed Correct' : 'Marked as Incorrect'}</span>
+        `;
+        
+        // Insert confirmation message after the VIN input
+        const vinInput = document.getElementById('vin_display');
+        if (vinInput && vinInput.parentNode) {
+            vinInput.parentNode.insertBefore(confirmationDiv, vinInput.nextSibling);
+        } else {
+            console.error('VIN input or parent node not found');
+        }
+    }
+    
+    // Initialize the application
+    document.addEventListener("DOMContentLoaded", function(){
+      // Initialize theme
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      if (currentTheme === 'dark') {
+        document.getElementById('themeIcon').textContent = '☀️';
+        document.getElementById('themeText').textContent = 'Light Mode';
+      }
+      
+      // Check if user is already authenticated
+      {% if user_email and not show_login %}
+        // User is already logged in via Google OAuth
+        showLoggedInScreen();
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('mainMenu').classList.remove('hidden');
+        document.getElementById('logoutBtn').style.display = 'block';
+        updateMassModeIndicator();
+        
+        // Set CAPID from session
+        localStorage.setItem('CAPID', '{{ capid }}');
+        
+        // Set admin status
+        {% if is_admin %}
+          localStorage.setItem('isAdmin', 'true');
+        {% else %}
+          localStorage.setItem('isAdmin', 'false');
+        {% endif %}
+        
+        // Set global user data for JavaScript functions
+        window.userData = {
+          member_info: {{ member_info | tojson if member_info else 'null' }}
+        };
+        
+        // Update user info display
+        updateUserInfo();
+      {% else %}
+        // Show login screen
+        showLoginScreen();
+      {% endif %}
+      
+      // Clear CAPID input
+      document.getElementById("capidInput").value = "";
+      
+      // Initialize radio buttons
+      initializeRadioButtons();
+      
+      // Initialize auto-save
+      initializeAutoSave();
+      
+      // Add VIN event listeners using event delegation (since buttons are dynamically shown/hidden)
+      document.addEventListener('click', function(event) {
+          console.log('Click detected on:', event.target);
+          console.log('Target ID:', event.target.id);
+          console.log('Target class:', event.target.className);
+          
+          if (event.target && event.target.id === 'vin_correct') {
+              console.log('VIN Correct button clicked');
+              event.preventDefault();
+              event.stopPropagation();
+              handleVINConfirmation(true);
+          } else if (event.target && event.target.id === 'vin_incorrect') {
+              console.log('VIN Incorrect button clicked');
+              event.preventDefault();
+              event.stopPropagation();
+              handleVINConfirmation(false);
+          }
+      });
+      
+      // Initialize form validation
+      initializeFormValidation();
+      
+      // Note: loadDraft() is called only when starting a new inspection
+      
+      // Add haptic feedback for touch devices
+      if ('vibrate' in navigator) {
+        document.querySelectorAll('.btn').forEach(btn => {
+          btn.addEventListener('touchstart', function() {
+            navigator.vibrate(50); // Short vibration
+          });
+        });
+      }
+    });
+
+    // tire code inputs now use standard keyboard - add event listeners for validation
+    document.addEventListener('DOMContentLoaded', function() {
+      const tireInputs = ['tire_fl', 'tire_fr', 'tire_rl', 'tire_rr', 'tire_spare'];
+      const tireNames = ['Front Left', 'Front Right', 'Rear Left', 'Rear Right', 'Spare'];
+      
+      tireInputs.forEach((inputId, index) => {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.addEventListener('blur', function() {
+            if (this.value.length === 4) {
+              checkTireAge(this.value, tireNames[index]);
+            }
+          });
+          
+          // only allow numbers
+          input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+          });
+        }
+      });
+    });
+  </script>
+
+  <!-- Footer -->
+  <footer style="margin-top: 4rem; padding: 1.5rem 0; border-top: 1px solid var(--border-color); background: var(--bg-secondary); text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+    <div class="container">
+      <p style="margin: 0; font-weight: 500;">CAP COV Inspection Application</p>
+      <p style="margin: 0.5rem 0 0 0;">Created by: Maj Jayson Hansen (621633)</p>
+    </div>
+  </footer>
+
+</body>
+</html>

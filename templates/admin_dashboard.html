@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - COV Web</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/cov_web_icon.png') }}" type="image/png">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-accent: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --white: #ffffff;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+        }
+
+        .dark-theme {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-accent: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .patch {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: default;
+        }
+
+        .main-app-btn {
+            background: var(--secondary);
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .main-app-btn:hover {
+            background: var(--gray-700);
+            transform: translateY(-1px);
+        }
+
+        .theme-toggle, .logout-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover, .logout-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            background: var(--bg-primary);
+        }
+
+        .admin-dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-dashboard h2 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .admin-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .admin-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            justify-content: center;
+        }
+
+        .admin-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+
+        .admin-card-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .admin-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .admin-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .admin-card-arrow {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 1.5rem;
+            color: var(--primary);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover .admin-card-arrow {
+            opacity: 1;
+            transform: translateX(4px);
+        }
+
+        .stats-card, .health-card {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+
+        .health-status {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-start;
+        }
+
+        .health-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .health-item:hover {
+            color: var(--primary);
+        }
+
+        .health-indicator {
+            font-size: 1.5rem;
+            color: #00ff00;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .recent-activity {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .recent-activity h3 {
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: var(--bg-primary);
+            margin: 0 -1rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .activity-text {
+            color: var(--text-primary);
+            flex: 1;
+            margin-left: 1rem;
+            font-weight: 500;
+        }
+
+        /* Event Management Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: var(--bg-primary);
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1.5rem 2rem;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .close {
+            color: var(--white);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            background: var(--bg-secondary);
+            padding: 1.5rem 2rem;
+            border-radius: 0 0 16px 16px;
+            text-align: right;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Reduce spacing for delete event modal */
+        #deleteEventModal .modal-body {
+            padding: 1rem 2rem;
+        }
+        
+        /* Reduce spacing for delete event modal paragraphs */
+        #deleteEventModal .modal-body p {
+            margin: 0.5rem 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--gray-700);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-800);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--gray-900);
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            color: var(--gray-900);
+            transform: translateY(-1px);
+        }
+
+        .event-management {
+            max-width: 100%;
+        }
+
+        .event-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .event-list-header h3 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .event-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .event-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .event-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-item.locked {
+            border-left: 4px solid var(--warning);
+        }
+
+        .event-item.unlocked {
+            border-left: 4px solid var(--success);
+        }
+
+        .event-info {
+            flex: 1;
+        }
+
+        .event-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .event-details {
+            display: flex;
+            gap: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .event-actions-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .lock-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .lock-status.locked {
+            background: var(--warning);
+            color: var(--gray-900);
+        }
+
+        .lock-status.unlocked {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        /* Custom Notification Styles */
+        .custom-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .custom-notification.show {
+            transform: translateX(0);
+        }
+
+        .custom-notification-success {
+            background: var(--success);
+            border-left: 4px solid #059669;
+        }
+
+        .custom-notification-error {
+            background: var(--danger);
+            border-left: 4px solid #dc2626;
+        }
+
+        .custom-notification-warning {
+            background: var(--warning);
+            border-left: 4px solid #d97706;
+        }
+
+        .custom-notification-info {
+            background: var(--info);
+            border-left: 4px solid #2563eb;
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--white);
+        }
+
+        .notification-icon {
+            font-size: 1.2rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .notification-message {
+            flex: 1;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 0.75rem;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            flex-shrink: 0;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .custom-notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+
+        .confirmation-modal {
+            max-width: 500px;
+        }
+
+        .confirmation-modal .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .access-info-card {
+            grid-column: span 3;
+        }
+
+        .access-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .access-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .access-info-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .access-info-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .admin-duty-position {
+            background: var(--success);
+            color: var(--white);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 0.25rem 0;
+            display: inline-block;
+        }
+        
+        .admin-duty-position.super-admin {
+            background: #FFD700;
+            color: #000000;
+            font-weight: 600;
+            text-shadow: none;
+        }
+
+        .duty-position-list {
+            margin-top: 0.5rem;
+        }
+
+        .duty-position-item {
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile devices */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-left, .header-right {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .admin-grid {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .admin-card {
+                min-width: unset;
+                max-width: unset;
+                width: 100%;
+            }
+            
+            .recent-activity {
+                padding: 1.5rem;
+            }
+            
+            .stats-card,
+            .health-card {
+                grid-column: span 1;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .health-status {
+                gap: 0.5rem;
+            }
+
+            .main-content {
+                padding: 0.5rem;
+            }
+            
+            .admin-dashboard {
+                padding: 0;
+            }
+
+            .admin-dashboard h2 {
+                font-size: 2rem;
+            }
+
+            .event-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .event-actions-buttons {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        /* Extra small mobile devices */
+        @media (max-width: 480px) {
+            .admin-grid {
+                gap: 1rem;
+            }
+            
+            .admin-card {
+                padding: 1.5rem;
+            }
+            
+            .admin-card h3 {
+                font-size: 1.3rem;
+            }
+            
+            .recent-activity {
+                padding: 1rem;
+                margin: 0 0.5rem;
+            }
+            
+            .recent-activity h3 {
+                font-size: 1.3rem;
+            }
+            
+            .main-content {
+                padding: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <img src="{{ url_for('static', filename='images/pawg_patch.png') }}" alt="PAWG Patch" class="patch">
+                <h1>COV Web Admin</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span>👑</span>
+                    <span>Admin Dashboard</span>
+                </div>
+                <a href="/" class="main-app-btn">← Main App</a>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <button class="logout-btn" onclick="logout()">Log Out</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="admin-dashboard">
+                <h2>Administrative Dashboard</h2>
+                <p class="admin-subtitle">Manage COV inspections, view reports, and export data</p>
+                
+                <div class="admin-grid">
+                    <!-- Admin Access Info -->
+                    <div class="admin-card access-info-card">
+                        <div class="admin-card-icon">👑</div>
+                        <h3>Admin Access</h3>
+                        <div id="adminAccessInfo">
+                            <div class="loading">Loading access information...</div>
+                        </div>
+                    </div>
+
+                    <!-- System Health -->
+                    <div class="admin-card health-card">
+                        <div class="admin-card-icon">⚡</div>
+                        <h3>System Health</h3>
+                        <div class="health-status">
+                            <div class="health-item" title="Database connection status - Last checked: Just now">
+                                <span class="health-indicator" id="dbStatus">●</span>
+                                <span>Database</span>
+                            </div>
+                            <div class="health-item" title="MongoDB collections status - Last checked: Just now">
+                                <span class="health-indicator" id="collectionsStatus">●</span>
+                                <span>Collections</span>
+                            </div>
+                            <div class="health-item" title="Video processing system status - Last checked: Just now">
+                                <span class="health-indicator" id="videoStatus">●</span>
+                                <span>Video Processing</span>
+                            </div>
+                            <div class="health-item" title="Authentication system status - Last checked: Just now">
+                                <span class="health-indicator" id="authStatus">●</span>
+                                <span>Authentication</span>
+                            </div>
+                        </div>
+                        <div id="dbInitSection" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--warning-light); border-radius: 4px; border-left: 4px solid var(--warning);">
+                            <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: var(--warning-dark);">Database Initialization</p>
+                            <p style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--text-secondary);">The database exists but may need initialization for optimal performance.</p>
+                            <button class="btn btn-sm" onclick="initializeDatabase()" style="background: var(--warning); color: white; border: none;">
+                                Initialize Database
+                            </button>
+                        </div>
+                        
+                        <!-- System Information -->
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                            <div id="systemInfoContent">
+                                <div class="loading">Loading system information...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="admin-card stats-card">
+                        <div class="admin-card-icon">📊</div>
+                        <h3>Quick Stats</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalInspections">-</span>
+                                <span class="stat-label">Total Inspections</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalCOVs">-</span>
+                                <span class="stat-label">COVs Inspected</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalEvents">-</span>
+                                <span class="stat-label">Events</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="videosWithIssues">-</span>
+                                <span class="stat-label">Video Issues</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inspection Management -->
+                    <div class="admin-card" onclick="window.location.href='/admin/covs'">
+                        <div class="admin-card-icon">🚐</div>
+                        <h3>Inspection Management</h3>
+                        <p>View and manage COV inspections, check video status, and review inspection details.</p>
+                        <div class="admin-card-arrow">→</div>
+                    </div>
+
+                    <!-- Data Export -->
+                    <div class="admin-card" onclick="downloadCSV()">
+                        <div class="admin-card-icon">📥</div>
+                        <h3>Data Export</h3>
+                        <p>Download comprehensive CSV files with all inspection data, including videos, events, and inspector details.</p>
+                        <div class="admin-card-arrow">→</div>
+                    </div>
+
+                    <!-- Event Management -->
+                    <div class="admin-card">
+                        <div class="admin-card-icon">🔒</div>
+                        <h3>Event Management</h3>
+                        <p>Lock and unlock events to control when new inspections can be added. Prevent duplicate event names.</p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn btn-success" onclick="openCreateEventModal()" style="flex: 1; padding: 0.5rem;">
+                                ➕ Create New
+                            </button>
+                            <button class="btn btn-primary" onclick="showEventManagement()" style="flex: 1; padding: 0.5rem;">
+                                Manage Events
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0;">Recent Activity</h3>
+                        <button class="btn btn-sm" onclick="exportActivityLog()" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.9rem;">
+                            📥 Export
+                        </button>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="activityFilter" value="all" checked onchange="filterActivities()" style="transform: scale(1.1);">
+                                <span>All</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="activityFilter" value="deletions" onchange="filterActivities()" style="transform: scale(1.1);">
+                                <span>Deletions</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="activityFilter" value="inspections" onchange="filterActivities()" style="transform: scale(1.1);">
+                                <span>Inspections</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="radio" name="activityFilter" value="events" onchange="filterActivities()" style="transform: scale(1.1);">
+                                <span>Events</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="activity-list" id="recentActivity">
+                        <div class="activity-item">
+                            <span class="activity-time">Loading...</span>
+                            <span class="activity-text">Fetching recent inspections...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Event Management Modal -->
+    <div id="eventManagementModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Event Management</h2>
+                <span class="close" onclick="closeEventManagement()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="event-management">
+                    <div class="event-list-header">
+                        <h3>Events</h3>
+                        <div class="event-actions">
+                            <button class="btn btn-success" onclick="openCreateEventModal()" style="margin-right: 0.5rem;">➕ Create New</button>
+                            <button class="btn btn-primary" onclick="refreshEvents()">Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <div id="eventList" class="event-list">
+                        <div class="loading">Loading events...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEventManagement()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmationModal" class="modal" style="display: none;">
+        <div class="modal-content confirmation-modal">
+            <div class="modal-header">
+                <h2 id="confirmationTitle">Confirm Action</h2>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmation(false)">Cancel</button>
+                <button class="btn btn-primary" onclick="closeConfirmation(true)">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Event</h2>
+                <span class="close" onclick="closeCreateEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Create a new event to organize inspections.</p>
+                <p style="color: var(--warning-dark); font-weight: 600; margin-bottom: 1rem;">⚠️ The system will check for duplicate or similar event names to prevent confusion.</p>
+                <div class="form-group">
+                    <label for="createEventNameInput">Event Name:</label>
+                    <input type="text" id="createEventNameInput" class="form-control" placeholder="Enter event name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="createEventFromAdmin()">Create Event</button>
+                <button class="btn btn-secondary" onclick="closeCreateEventModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Merge Event Modal -->
+    <div id="mergeEventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Merge Events</h2>
+                <span class="close" onclick="closeMergeEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p><strong>Source Event:</strong> <span id="mergeSourceEvent"></span></p>
+                <p style="color: var(--warning-dark); font-weight: 600; margin: 1rem 0;">⚠️ This action cannot be undone. All inspections from the source event will be moved to the target event.</p>
+                <div class="form-group">
+                    <label for="mergeTargetEventSelect">Merge into this event:</label>
+                    <select id="mergeTargetEventSelect" class="form-control">
+                        <option value="">Select target event...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="confirmMergeEvents()">Merge Events</button>
+                <button class="btn btn-secondary" onclick="closeMergeEventModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Event Confirmation Modal -->
+    <div id="deleteEventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Delete Event</h2>
+                <span class="close" onclick="closeDeleteEventModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p><strong>Event:</strong> <span id="deleteEventName"></span></p>
+                <p><strong>Inspections:</strong> <span id="deleteEventInspections">0</span></p>
+                <p style="color: var(--danger); font-weight: 600; margin: 1rem 0;">⚠️ This action cannot be undone. The event will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteEventModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="confirmDeleteEvent()">Delete Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Similar Events Modal -->
+    <div id="similarEventsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Similar Event Names Found</h2>
+                <span class="close" onclick="closeSimilarEventsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>We found similar event names. Did you mean one of these instead?</p>
+                <div id="similarEventsList" style="margin: 1rem 0;">
+                    <!-- Similar events will be populated here -->
+                </div>
+                <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="forceCreateCheckbox" style="transform: scale(1.2);">
+                        <span style="font-weight: 600; color: var(--warning);">⚠️ Create new event anyway</span>
+                    </label>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        Check this box if you want to create "<span id="requestedEventName"></span>" as a new event despite the similar names above.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="handleSimilarEventsChoice()">Continue</button>
+                <button class="btn btn-secondary" onclick="closeSimilarEventsModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme management
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Download CSV
+        function downloadCSV() {
+            window.location.href = '/admin/export/csv';
+        }
+
+        // Event Management Functions
+        function showEventManagement() {
+            document.getElementById('eventManagementModal').style.display = 'block';
+            loadEvents();
+        }
+
+        function closeEventManagement() {
+            document.getElementById('eventManagementModal').style.display = 'none';
+        }
+
+        async function loadEvents() {
+            try {
+                const response = await fetch('/api/admin/events');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const text = await response.text();
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (parseError) {
+                    throw new Error(`JSON parse error: ${parseError.message}. Response: ${text.substring(0, 200)}...`);
+                }
+                
+                if (data.status === 'success') {
+                    window.eventsList = data.events; // Store events globally for delete function
+                    displayEvents(data.events);
+                } else {
+                    document.getElementById('eventList').innerHTML = 
+                        '<div class="error">Error loading events: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('eventList').innerHTML = 
+                    '<div class="error">Error loading events: ' + error.message + '</div>';
+            }
+        }
+
+        function displayEvents(events) {
+            const eventList = document.getElementById('eventList');
+            
+            if (events.length === 0) {
+                eventList.innerHTML = '<div class="loading">No events found</div>';
+                return;
+            }
+
+            eventList.innerHTML = events.map(event => `
+                <div class="event-item ${event.locked ? 'locked' : 'unlocked'}">
+                    <div class="event-info">
+                        <div class="event-name">${event.name}</div>
+                        <div class="event-details">
+                            <span>Inspections: ${event.inspection_count}</span>
+                            <span class="lock-status ${event.locked ? 'locked' : 'unlocked'}">
+                                ${event.locked ? 'Locked' : 'Unlocked'}
+                            </span>
+                            ${event.locked ? `<span>Locked by: ${event.locked_by}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="event-actions-buttons">
+                        ${event.locked ? 
+                            `<button class="btn btn-success" onclick="unlockEvent('${event.name}')">Unlock</button>` :
+                            `<button class="btn btn-warning" onclick="lockEvent('${event.name}')">Lock</button>`
+                        }
+                        ${!event.locked ? 
+                            `<button class="btn btn-info" onclick="openMergeEventModal('${event.name}')" style="margin-left: 0.5rem; background: #0056b3; border-color: #0056b3;">Merge</button>` : 
+                            `<button class="btn btn-info" disabled style="margin-left: 0.5rem; opacity: 0.5; background: #0056b3; border-color: #0056b3;">Merge</button>`
+                        }
+                        ${window.isSuperAdmin ? 
+                            (event.locked ? 
+                                `<button class="btn btn-danger" disabled title="Cannot delete: Event is locked" style="margin-left: 0.5rem; background: #6c757d; border-color: #6c757d; opacity: 0.6; cursor: not-allowed; color: #ffffff;">Delete</button>` :
+                                (event.inspection_count > 0 ? 
+                                    `<button class="btn btn-danger" disabled title="Cannot delete: Event has ${event.inspection_count} inspection(s). Use merge instead." style="margin-left: 0.5rem; background: #6c757d; border-color: #6c757d; opacity: 0.6; cursor: not-allowed; color: #ffffff;">Delete</button>` :
+                                    `<button class="btn btn-danger" onclick="deleteEvent('${event.name}')" style="margin-left: 0.5rem; background: #dc3545; border-color: #dc3545;">Delete</button>`
+                                )
+                            ) : ''
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function lockEvent(eventName) {
+            showConfirmation(
+                'Lock Event',
+                `Are you sure you want to lock the event "${eventName}"? This will prevent new inspections from being added to this event.`,
+                async (confirmed) => {
+                    if (!confirmed) return;
+
+                    try {
+                        const response = await fetch(`/api/admin/events/${encodeURIComponent(eventName)}/lock`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.status === 'success') {
+                            showNotification(data.message, 'success');
+                            loadEvents(); // Refresh the event list
+                        } else {
+                            showNotification('Error: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error locking event:', error);
+                        showNotification('Error locking event: ' + error.message, 'error');
+                    }
+                }
+            );
+        }
+
+        async function unlockEvent(eventName) {
+            showConfirmation(
+                'Unlock Event',
+                `Are you sure you want to unlock the event "${eventName}"? This will allow new inspections to be added to this event.`,
+                async (confirmed) => {
+                    if (!confirmed) return;
+
+                    try {
+                        const response = await fetch(`/api/admin/events/${encodeURIComponent(eventName)}/unlock`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.status === 'success') {
+                            showNotification(data.message, 'success');
+                            loadEvents(); // Refresh the event list
+                        } else {
+                            showNotification('Error: ' + data.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error unlocking event:', error);
+                        showNotification('Error unlocking event: ' + error.message, 'error');
+                    }
+                }
+            );
+        }
+
+        function refreshEvents() {
+            loadEvents();
+        }
+
+        // Custom success modal (similar to inspection submission)
+        function showSuccessMessage(message) {
+            // Create a compact success message
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div style="
+                    background-color: var(--bg-primary);
+                    margin: auto;
+                    padding: 0;
+                    border-radius: 12px;
+                    width: 450px;
+                    max-width: 90vw;
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                    border: 1px solid var(--border-color);
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #007bff, #0056b3);
+                        color: white;
+                        padding: 1.5rem 2rem;
+                        border-radius: 12px 12px 0 0;
+                        font-weight: 600;
+                        font-size: 1.2rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    ">
+                        <span>✅</span>
+                        <span>Success</span>
+                    </div>
+                    <div style="
+                        padding: 2rem 2rem;
+                        text-align: center;
+                        font-size: 1.1rem;
+                        color: var(--text-primary);
+                        line-height: 1.5;
+                    ">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (modal.parentNode) {
+                    modal.remove();
+                }
+            }, 3000);
+        }
+
+        // Custom notification system
+        function showNotification(message, type = 'info', duration = 5000) {
+            // Remove any existing notifications
+            const existing = document.querySelector('.custom-notification');
+            if (existing) {
+                existing.remove();
+            }
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `custom-notification custom-notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span class="notification-icon">${getNotificationIcon(type)}</span>
+                    <span class="notification-message">${message}</span>
+                    <button class="notification-close" onclick="closeNotification()">&times;</button>
+                </div>
+            `;
+
+            // Add to page
+            document.body.appendChild(notification);
+
+            // Show with animation
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+
+            // Auto-hide after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    closeNotification();
+                }, duration);
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'success': return '✅';
+                case 'error': return '❌';
+                case 'warning': return '⚠️';
+                case 'info': return 'ℹ️';
+                default: return 'ℹ️';
+            }
+        }
+
+        function closeNotification() {
+            const notification = document.querySelector('.custom-notification');
+            if (notification) {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }
+        }
+
+        // Custom confirmation system
+        let confirmationCallback = null;
+
+        function showConfirmation(title, message, callback) {
+            document.getElementById('confirmationTitle').textContent = title;
+            document.getElementById('confirmationMessage').textContent = message;
+            confirmationCallback = callback;
+            document.getElementById('confirmationModal').style.display = 'block';
+        }
+
+        function closeConfirmation(confirmed) {
+            document.getElementById('confirmationModal').style.display = 'none';
+            if (confirmationCallback) {
+                confirmationCallback(confirmed);
+                confirmationCallback = null;
+            }
+        }
+
+        // Load admin access information
+        async function loadAdminAccessInfo() {
+            try {
+                const response = await fetch('/api/admin/access-info');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Set global super admin status for UI
+                    window.isSuperAdmin = data.is_super_admin;
+                    
+                    const container = document.getElementById('adminAccessInfo');
+                    container.innerHTML = `
+                        <div class="access-info-item">
+                            <span class="access-info-label">Name:</span>
+                            <span class="access-info-value">${data.user_info.name}</span>
+                        </div>
+                        <div class="access-info-item">
+                            <span class="access-info-label">CAPID:</span>
+                            <span class="access-info-value">${data.user_info.capid}</span>
+                        </div>
+                        <div class="access-info-item">
+                            <span class="access-info-label">Email:</span>
+                            <span class="access-info-value">${data.user_info.email}</span>
+                        </div>
+                        <div class="access-info-item">
+                            <span class="access-info-label">Admin Access Via:</span>
+                            <div class="duty-position-list">
+                                ${data.is_super_admin ? 
+                                    `<span class="admin-duty-position super-admin">Super-Admin</span>` : ''
+                                }
+                                ${data.admin_duty_positions.map(pos => 
+                                    `<span class="admin-duty-position">${pos}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('adminAccessInfo').innerHTML = 
+                        '<div class="error">Error loading access information: ' + data.message + '</div>';
+                }
+            } catch (error) {
+                console.error('Error loading admin access info:', error);
+                document.getElementById('adminAccessInfo').innerHTML = 
+                    '<div class="error">Error loading access information</div>';
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load admin access info
+                loadAdminAccessInfo();
+                
+                // Load quick stats
+                const statsResponse = await fetch('/api/admin/stats');
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('totalInspections').textContent = stats.total_inspections || 0;
+                    document.getElementById('totalCOVs').textContent = stats.total_covs || 0;
+                    document.getElementById('totalEvents').textContent = stats.total_events || 0;
+                    document.getElementById('videosWithIssues').textContent = stats.videos_with_issues || 0;
+                }
+
+        // Load recent activity
+        try {
+            const activityResponse = await fetch('/api/admin/recent-activity');
+            if (activityResponse.ok) {
+                const data = await activityResponse.json();
+                if (data.status === 'success') {
+                    updateRecentActivity(data.activities);
+                } else {
+                    console.error('Error loading recent activity:', data.message);
+                    updateRecentActivity([]);
+                }
+            } else {
+                const errorText = await activityResponse.text();
+                console.error('Failed to load recent activity:', activityResponse.status, errorText);
+                updateRecentActivity([]);
+            }
+        } catch (error) {
+            console.error('Exception loading recent activity:', error);
+            updateRecentActivity([]);
+        }
+
+                // Update system health
+                updateSystemHealth();
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Update recent activity
+        function updateRecentActivity(activities) {
+            const activityList = document.getElementById('recentActivity');
+            
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = '<div class="activity-item"><span class="activity-text">No recent activity</span></div>';
+                return;
+            }
+
+            activityList.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <span class="activity-time">${activity.time}</span>
+                    <span class="activity-text">${activity.text}</span>
+                </div>
+            `).join('');
+        }
+
+        // Update system health indicators
+        function updateSystemHealth() {
+            // Database status
+            document.getElementById('dbStatus').style.color = 'var(--success)';
+            
+            // Collections status
+            const collectionsStatus = document.getElementById('collectionsStatus');
+            if (collectionsStatus) {
+                collectionsStatus.style.color = 'var(--success)';
+            }
+            
+            // Video processing status
+            document.getElementById('videoStatus').style.color = 'var(--success)';
+            
+            // Authentication status
+            document.getElementById('authStatus').style.color = 'var(--success)';
+        }
+        
+        async function initializeDatabase() {
+            try {
+                const response = await fetch('/api/admin/initialize-database', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showSuccessMessage(data.message);
+                    // Hide the initialization section
+                    const dbInitSection = document.getElementById('dbInitSection');
+                    if (dbInitSection) {
+                        dbInitSection.style.display = 'none';
+                    }
+                    // Update collections status
+                    const collectionsStatus = document.getElementById('collectionsStatus');
+                    if (collectionsStatus) {
+                        collectionsStatus.style.color = 'var(--success)';
+                    }
+                } else {
+                    showErrorMessage(data.message || 'Failed to initialize database');
+                }
+            } catch (error) {
+                console.error('Error initializing database:', error);
+                showErrorMessage('Failed to initialize database');
+            }
+        }
+        
+        function filterActivities() {
+            const selectedFilter = document.querySelector('input[name="activityFilter"]:checked').value;
+            const activityItems = document.querySelectorAll('.activity-item');
+            
+            activityItems.forEach(item => {
+                const text = item.querySelector('.activity-text').textContent;
+                let shouldShow = true;
+                
+                if (selectedFilter === 'deletions') {
+                    shouldShow = text.includes('deleted');
+                } else if (selectedFilter === 'inspections') {
+                    shouldShow = text.includes('inspected') && !text.includes('deleted');
+                } else if (selectedFilter === 'events') {
+                    shouldShow = text.includes('locked') || text.includes('unlocked') || text.includes('merged') || text.includes('Event') && text.includes('deleted');
+                }
+                
+                item.style.display = shouldShow ? 'flex' : 'none';
+            });
+        }
+        
+        async function exportActivityLog() {
+            try {
+                const response = await fetch('/api/admin/export-activity');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `activity_log_${new Date().toISOString().split('T')[0]}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showSuccessMessage('Activity log exported successfully');
+                } else {
+                    showErrorMessage('Failed to export activity log');
+                }
+            } catch (error) {
+                console.error('Error exporting activity log:', error);
+                showErrorMessage('Failed to export activity log');
+            }
+        }
+        
+        // Create Event Functions
+        function openCreateEventModal() {
+            document.getElementById('createEventModal').style.display = 'block';
+            document.getElementById('createEventNameInput').focus();
+        }
+        
+        function closeCreateEventModal() {
+            document.getElementById('createEventModal').style.display = 'none';
+            document.getElementById('createEventNameInput').value = '';
+        }
+        
+        async function createEventFromAdmin() {
+            const eventName = document.getElementById('createEventNameInput').value.trim();
+            if (!eventName) {
+                alert('Please enter an event name.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/events', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: eventName,
+                        inspector_id: 'admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'success') {
+                    showSuccessMessage(`Event "${eventName}" created successfully`);
+                    closeCreateEventModal();
+                    loadEvents(); // Refresh the event list
+                } else if (data.status === 'similar_events_found') {
+                    // Show modal with similar events for user to choose
+                    showSimilarEventsModal(eventName, data.similar_events, data.requested_name);
+                } else {
+                    showErrorMessage(data.message || 'Failed to create event');
+                }
+            } catch (error) {
+                console.error('Error creating event:', error);
+                showErrorMessage('Failed to create event: ' + error.message);
+            }
+        }
+        
+        // Similar Events Modal Functions
+        let pendingEventName = '';
+        let selectedSimilarEvent = '';
+        
+        function showSimilarEventsModal(eventName, similarEvents, requestedName) {
+            pendingEventName = eventName;
+            document.getElementById('requestedEventName').textContent = requestedName || eventName;
+            
+            // Populate similar events list
+            const listContainer = document.getElementById('similarEventsList');
+            listContainer.innerHTML = '';
+            
+            similarEvents.forEach((event, index) => {
+                const similarityPercent = Math.round(event.similarity * 100);
+                const eventDiv = document.createElement('div');
+                eventDiv.style.cssText = `
+                    padding: 0.75rem;
+                    margin: 0.5rem 0;
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                `;
+                eventDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <input type="radio" name="similarEvent" value="${event.name}" id="similar_${index}" style="transform: scale(1.2);">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: var(--text-primary);">${event.name}</div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">${similarityPercent}% similar</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add click handler
+                eventDiv.addEventListener('click', () => {
+                    document.getElementById(`similar_${index}`).checked = true;
+                    selectedSimilarEvent = event.name;
+                    // Uncheck force create
+                    document.getElementById('forceCreateCheckbox').checked = false;
+                });
+                
+                listContainer.appendChild(eventDiv);
+            });
+            
+            // Reset state
+            selectedSimilarEvent = '';
+            document.getElementById('forceCreateCheckbox').checked = false;
+            
+            // Show modal
+            document.getElementById('similarEventsModal').style.display = 'block';
+        }
+        
+        function closeSimilarEventsModal() {
+            document.getElementById('similarEventsModal').style.display = 'none';
+            pendingEventName = '';
+            selectedSimilarEvent = '';
+        }
+        
+        async function handleSimilarEventsChoice() {
+            const forceCreate = document.getElementById('forceCreateCheckbox').checked;
+            
+            if (selectedSimilarEvent && !forceCreate) {
+                // User selected an existing event
+                showSuccessMessage(`Using existing event: "${selectedSimilarEvent}"`);
+                closeSimilarEventsModal();
+                closeCreateEventModal();
+                loadEvents();
+            } else if (forceCreate) {
+                // User wants to create new event anyway
+                try {
+                    const response = await fetch('/events', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name: pendingEventName,
+                            inspector_id: localStorage.getItem('CAPID'),
+                            force_create: true
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        showSuccessMessage(`Event "${pendingEventName}" created successfully`);
+                        closeSimilarEventsModal();
+                        closeCreateEventModal();
+                        loadEvents();
+                    } else {
+                        showErrorMessage(data.message || 'Failed to create event');
+                    }
+                } catch (error) {
+                    console.error('Error creating event:', error);
+                    showErrorMessage('Failed to create event: ' + error.message);
+                }
+            } else {
+                showErrorMessage('Please select an existing event or check "Create new event anyway"');
+            }
+        }
+        
+        // Merge Event Functions
+        let mergeSourceEvent = '';
+        
+        function openMergeEventModal(sourceEventName) {
+            mergeSourceEvent = sourceEventName;
+            document.getElementById('mergeSourceEvent').textContent = sourceEventName;
+            document.getElementById('mergeEventModal').style.display = 'block';
+            loadMergeTargetEvents(sourceEventName);
+        }
+        
+        function closeMergeEventModal() {
+            document.getElementById('mergeEventModal').style.display = 'none';
+            document.getElementById('mergeTargetEventSelect').value = '';
+            mergeSourceEvent = '';
+        }
+        
+        async function loadMergeTargetEvents(sourceEventName) {
+            try {
+                const response = await fetch('/api/admin/events');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const targetSelect = document.getElementById('mergeTargetEventSelect');
+                    targetSelect.innerHTML = '<option value="">Select target event...</option>';
+                    
+                    data.events.forEach(event => {
+                        // Only show unlocked events that are not the source event
+                        if (!event.locked && event.name !== sourceEventName) {
+                            const option = document.createElement('option');
+                            option.value = event.name;
+                            option.textContent = `${event.name} (${event.inspection_count} inspections)`;
+                            targetSelect.appendChild(option);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading events for merge:', error);
+            }
+        }
+        
+        async function confirmMergeEvents() {
+            const targetEvent = document.getElementById('mergeTargetEventSelect').value;
+            if (!targetEvent) {
+                alert('Please select a target event to merge into.');
+                return;
+            }
+            
+            if (!confirm(`Are you absolutely sure you want to merge "${mergeSourceEvent}" into "${targetEvent}"?\n\nThis action cannot be undone and will move all inspections from the source event to the target event.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/merge-events', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        source_event: mergeSourceEvent,
+                        target_event: targetEvent
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showSuccessMessage(`Successfully merged "${mergeSourceEvent}" into "${targetEvent}"`);
+                    closeMergeEventModal();
+                    loadEvents(); // Refresh the event list
+                } else {
+                    showErrorMessage(data.message || 'Failed to merge events');
+                }
+            } catch (error) {
+                console.error('Error merging events:', error);
+                showErrorMessage('Failed to merge events');
+            }
+        }
+        
+        let eventToDelete = null;
+
+        function deleteEvent(eventName) {
+            // Find the event details
+            const event = window.eventsList.find(e => e.name === eventName);
+            if (!event) {
+                showErrorMessage('Event not found');
+                return;
+            }
+
+            eventToDelete = eventName;
+            document.getElementById('deleteEventName').textContent = eventName;
+            document.getElementById('deleteEventInspections').textContent = event.inspection_count;
+            document.getElementById('deleteEventModal').style.display = 'block';
+        }
+
+        function closeDeleteEventModal() {
+            const modal = document.getElementById('deleteEventModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            eventToDelete = null;
+        }
+
+        async function confirmDeleteEvent() {
+            if (!eventToDelete) {
+                showNotification('No event selected for deletion', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/events/${encodeURIComponent(eventToDelete)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const eventName = eventToDelete || 'Event'; // Get name before closing modal
+                    closeDeleteEventModal(); // Close modal immediately
+                    loadEvents(); // Refresh the event list
+                    showSuccessMessage(`Event "${eventName}" deleted successfully`);
+                } else {
+                    showNotification(data.message || 'Failed to delete event', 'error');
+                    closeDeleteEventModal(); // Close modal even on API error
+                }
+            } catch (error) {
+                console.error('Error deleting event:', error);
+                showNotification('Failed to delete event', 'error');
+                closeDeleteEventModal(); // Ensure modal closes even on error
+            }
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const eventModal = document.getElementById('eventManagementModal');
+            if (event.target === eventModal) {
+                closeEventManagement();
+            }
+            
+            const deleteModal = document.getElementById('deleteEventModal');
+            if (event.target === deleteModal) {
+                closeDeleteEventModal();
+            }
+            
+            const similarModal = document.getElementById('similarEventsModal');
+            if (event.target === similarModal) {
+                closeSimilarEventsModal();
+            }
+        }
+
+        // Load System Information
+        async function loadSystemInfo() {
+            const content = document.getElementById('systemInfoContent');
+            
+            try {
+                const response = await fetch('/api/admin/system-info');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    content.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem;">
+                            <div style="color: var(--text-secondary);">
+                                <span style="color: ${data.cpu_percent > 80 ? 'var(--danger)' : data.cpu_percent > 60 ? 'var(--warning)' : 'var(--success)'}">
+                                    CPU: ${data.cpu_percent}%
+                                </span>
+                            </div>
+                            <div style="color: var(--text-secondary);">
+                                <span style="color: ${data.memory_percent > 80 ? 'var(--danger)' : data.memory_percent > 60 ? 'var(--warning)' : 'var(--success)'}">
+                                    RAM: ${data.memory_percent}%
+                                </span>
+                            </div>
+                            <div style="color: var(--text-secondary);">
+                                <span style="color: ${data.disk_percent > 80 ? 'var(--danger)' : data.disk_percent > 60 ? 'var(--warning)' : 'var(--success)'}">
+                                    Disk: ${data.disk_percent}%
+                                </span>
+                            </div>
+                            <div style="color: var(--text-secondary);">
+                                Free: ${data.disk_free}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = '<div style="color: var(--text-secondary); font-size: 0.8rem;">System info unavailable</div>';
+                }
+            } catch (error) {
+                content.innerHTML = '<div style="color: var(--text-secondary); font-size: 0.8rem;">System info unavailable</div>';
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            loadDashboardData();
+            loadSystemInfo();
+        });
+    </script>
+
+
+</body>
+</html>
